@@ -1,0 +1,42 @@
+# ===== Java =====
+*.class
+*.log
+
+# ===== Maven =====
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# ===== Gradle =====
+.gradle/
+build/
+
+# ===== IDEs =====
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Spring Boot =====
+*.jar
+*.war
+
+# ===== Logs =====
+logs/
+*.log
+
+# ===== Temp =====
+tmp/
+temp/
+
+postgres/*
+mongodb/*

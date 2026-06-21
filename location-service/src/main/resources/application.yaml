@@ -1,0 +1,52 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: location-service
+
+  data:
+    mongodb:
+      host: ${SPRING_DATA_MONGODB_HOST:localhost}
+      port: ${SPRING_DATA_MONGODB_PORT:27017}
+      database: ${SPRING_DATA_MONGODB_DATABASE:location_db}
+      username: ${SPRING_DATA_MONGODB_USERNAME:mongo}
+      password: ${SPRING_DATA_MONGODB_PASSWORD:mongo}
+      authentication-database: admin
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD:redis123}
+
+jwt:
+  secret: ${JWT_SECRET:d4ry5l1PuM3RZtQU9HVIVjnNb3r+Zfn26DRIZPybM9eDZtrlXgz3kTxl3rc6UEEZFsiz+Lv9x9dVO2ykCBybag==}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+location-service:
+  stale-driver-threshold-minutes: 2
+  history-retention-days: 30
+  nearby-max-radius-km: 50
+
+feign:
+  client:
+    config:
+      user-service:
+        url: ${USER_SERVICE_URL:http://localhost:8082}
+
+logging:
+  level:
+    com.ridehailing.locationservice: INFO

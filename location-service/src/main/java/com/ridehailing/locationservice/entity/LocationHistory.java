@@ -1,0 +1,55 @@
+package com.ridehailing.locationservice.entity;
+
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Document(collection = "location_history")
+@CompoundIndexes({
+        @CompoundIndex(name = "driver_time_idx", def = "{'driverId': 1, 'createdAt': -1}")
+})
+public class LocationHistory {
+
+    @Id
+    private String id;
+
+    private String driverId;
+
+    private GeoJsonPoint location;
+
+    private Double speedKmh;
+    private Double bearing;
+
+    private Instant createdAt;
+
+    public static LocationHistory from(String driverId, double lat, double lng,
+                                       Double speedKmh, Double bearing) {
+        return LocationHistory.builder()
+                .id(UUID.randomUUID().toString())
+                .driverId(driverId)
+                .location(new GeoJsonPoint(lng, lat))
+                .speedKmh(speedKmh)
+                .bearing(bearing)
+                .createdAt(Instant.now())
+                .build();
+    }
+
+    public Double getLatitude() {
+        return this.location != null ? this.location.getY() : null;
+    }
+
+    public Double getLongitude() {
+        return this.location != null ? this.location.getX() : null;
+    }
+}

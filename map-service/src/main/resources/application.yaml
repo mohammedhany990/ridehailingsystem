@@ -1,0 +1,28 @@
+server:
+  port: 8089
+
+osrm:
+  base-url: ${OSRM_BASE_URL:https://router.project-osrm.org}
+
+spring:
+  application:
+    name: map-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.ridehailing.mapservice: INFO
