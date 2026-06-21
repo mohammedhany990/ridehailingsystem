@@ -106,6 +106,38 @@ services:
       ride-hailing-postgres:
         condition: service_healthy
 
+  eureka-server:
+    <<: *spring-service
+    container_name: eureka-server
+    build: ./eureka-server
+
+    ports:
+      - "8761:8761"
+
+    environment:
+      SPRING_APPLICATION_NAME: eureka-server
+
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8761 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api-gateway:
+    <<: *spring-service
+    container_name: api-gateway
+    build: ./api-gateway
+
+    ports:
+      - "8888:8888"
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_APPLICATION_NAME: gateway-service
   auth-service:
     <<: *spring-service
     container_name: auth-service
