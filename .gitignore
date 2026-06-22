@@ -41,3 +41,5 @@ temp/
 postgres/*
 mongodb/*
 .env
+.env.*
+!.env.example
