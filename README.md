@@ -133,12 +133,12 @@ All microservices are reachable through the **API Gateway** on port `8888`. Belo
 
 | Target Service | Path Prefix | Example Endpoint |
 | :--- | :--- | :--- |
-| **Auth Service** | `/api/v1/auth/**` | `POST http://localhost:8888/api/v1/auth/register` |
-| **User Service** | `/api/v1/users/**` | `GET http://localhost:8888/api/v1/users/drivers/{id}` |
-| **Ride Service** | `/api/v1/rides/**` | `POST http://localhost:8888/api/v1/rides/request` |
-| **Location Service** | `/api/v1/locations/**` | `PUT http://localhost:8888/api/v1/locations/drivers/coordinates` |
-| **Pricing Service** | `/api/v1/pricing/**` | `GET http://localhost:8888/api/v1/pricing/estimate` |
-| **Rating Service** | `/api/v1/ratings/**` | `POST http://localhost:8888/api/v1/ratings/submit` |
+| **Auth Service** | `/api/auth/**` | `POST http://localhost:8888/auth-service/api/auth/register` |
+| **User Service** | `/api/users/**` | `GET http://localhost:8888/user-service/api/drivers/drivers/{id}` |
+| **Ride Service** | `/api/rides/**` | `POST http://localhost:8888/ride-service/api/rides/request` |
+| **Location Service** | `/api/location/**` | `PUT http://localhost:8888/location-service/api/location/drivers/coordinates` |
+| **Pricing Service** | `/api/pricing/**` | `GET http://localhost:8888/pricing-service/api/pricing/estimate` |
+| **Rating Service** | `/api/ratings/**` | `POST http://localhost:8888/rating-service/api/ratings/submit` |
 
 ---
 
