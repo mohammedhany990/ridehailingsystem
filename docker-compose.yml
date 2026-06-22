@@ -133,11 +133,19 @@ services:
 
     depends_on:
       eureka-server:
-        condition: service_started
+        condition: service_healthy
 
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
       SPRING_APPLICATION_NAME: gateway-service
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8888/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
   auth-service:
     <<: *spring-service
     container_name: auth-service
@@ -151,8 +159,8 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
-      SPRING_REDIS_HOST: redis
-      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
 
     depends_on:
       ride-hailing-postgres:
@@ -215,13 +223,13 @@ services:
       ride-hailing-postgres:
         condition: service_healthy
       location-service:
-        condition: service_started
+        condition: service_healthy
       user-service:
-        condition: service_started
+        condition: service_healthy
       map-service:
-        condition: service_started
+        condition: service_healthy
       pricing-service:
-        condition: service_started
+        condition: service_healthy
 
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8083/actuator/health || exit 1"]
@@ -305,6 +313,8 @@ services:
       redis:
         condition: service_healthy
       mongodb:
+        condition: service_healthy
+      user-service:
         condition: service_healthy
 
     healthcheck:
