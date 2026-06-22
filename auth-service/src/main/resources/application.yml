@@ -23,13 +23,13 @@ spring:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}
       port: ${SPRING_REDIS_PORT:6379}
-      password: ${SPRING_REDIS_PASSWORD:}
+      password: ${SPRING_REDIS_PASSWORD:redis123}
 
   mail:
     host: ${SPRING_MAIL_HOST:sandbox.smtp.mailtrap.io}
     port: ${SPRING_MAIL_PORT:2525}
-    username: ${SPRING_MAIL_USERNAME:}
-    password: ${SPRING_MAIL_PASSWORD:}
+    username: ${SPRING_MAIL_USERNAME:mohammedhanymaher1163@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:yscivyqphvievrue}
     properties:
       mail:
         smtp:
@@ -45,7 +45,7 @@ jwt:
 eureka:
   client:
     service-url:
-      defaultZone: http://eureka-server:8761/eureka
+      defaultZone: http://localhost:8761/eureka
     register-with-eureka: true
     fetch-registry: true
 
