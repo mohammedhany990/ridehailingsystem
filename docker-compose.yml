@@ -70,7 +70,7 @@ services:
     container_name: ride-redis
     restart: unless-stopped
 
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass ${SPRING_DATA_REDIS_PASSWORD}
 
     ports:
       - "6379:6379"
@@ -82,7 +82,7 @@ services:
       - ride-net
 
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${SPRING_DATA_REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -158,22 +158,24 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://ride-hailing-postgres:5432/auth_db
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
       JWT_SECRET: ${JWT_SECRET}
+
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_DATA_REDIS_PASSWORD: ${SPRING_DATA_REDIS_PASSWORD}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: true
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: true
 
     depends_on:
       ride-hailing-postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
 
   user-service:
     <<: *spring-service
@@ -254,7 +256,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_DATA_REDIS_PASSWORD: ${SPRING_DATA_REDIS_PASSWORD}
 
     depends_on:
       ride-hailing-postgres:
@@ -305,7 +307,7 @@ services:
     environment:
       JWT_SECRET: ${JWT_SECRET}
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_DATA_REDIS_PASSWORD: ${SPRING_DATA_REDIS_PASSWORD}
       SPRING_DATA_MONGODB_HOST: mongodb
       SPRING_DATA_MONGODB_USERNAME: ${MONGO_USER}
       SPRING_DATA_MONGODB_PASSWORD: ${MONGO_PASSWORD}

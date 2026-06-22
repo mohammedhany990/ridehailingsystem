@@ -92,14 +92,14 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 MONGO_USER=mongo
 MONGO_PASSWORD=mongo
-REDIS_PASSWORD=redis123
+SPRING_DATA_REDIS_PASSWORD=redis123
 
 # Security
 JWT_SECRET=d4ry5l1PuM3RZtQU9HVIVjnNb3r+Zfn26DRIZPybM9eDZtrlXgz3kTxl3rc6UEEZFsiz+Lv9x9dVO2ykCBybag==
 
 # Optional Integrations
-MAIL_HOST=sandbox.smtp.mailtrap.io
-MAIL_PORT=2525
+SPRING_MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
 MAIL_USERNAME=your_smtp_user
 MAIL_PASSWORD=your_smtp_password
 STRIPE_SECRET_KEY=your_stripe_secret_key
