@@ -136,7 +136,7 @@ All microservices are reachable through the **API Gateway** on port `8888`. Belo
 | **Auth Service** | `/api/auth/**` | `POST http://localhost:8888/auth-service/api/auth/register` |
 | **User Service** | `/api/users/**` | `GET http://localhost:8888/user-service/api/drivers/drivers/{id}` |
 | **Ride Service** | `/api/rides/**` | `POST http://localhost:8888/ride-service/api/rides/request` |
-| **Location Service** | `/api/location/**` | `PUT http://localhost:8888/location-service/api/location/drivers/coordinates` |
+| **Location Service** | `/api/location/**` | `POST http://localhost:8888/location-service/api/location/update` |
 | **Pricing Service** | `/api/pricing/**` | `GET http://localhost:8888/pricing-service/api/pricing/estimate` |
 | **Rating Service** | `/api/ratings/**` | `POST http://localhost:8888/rating-service/api/ratings/submit` |
 
