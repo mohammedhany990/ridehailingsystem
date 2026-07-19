@@ -198,11 +198,8 @@ logging:
     com.ridehailing.rideservice: INFO
 
 resilience4j:
-
   circuitbreaker:
-
     configs:
-
       default:
         slidingWindowSize: 10
         minimumNumberOfCalls: 5
@@ -210,40 +207,28 @@ resilience4j:
         waitDurationInOpenState: 30s
         automaticTransitionFromOpenToHalfOpenEnabled: true
         permittedNumberOfCallsInHalfOpenState: 3
-
     instances:
-
       user:
         baseConfig: default
-
       pricing:
         baseConfig: default
-
       map:
         baseConfig: default
-
       location:
         baseConfig: default
 
   retry:
-
     configs:
-
       default:
         maxAttempts: 3
         waitDuration: 500ms
-
     instances:
-
       user:
         baseConfig: default
-
       pricing:
         baseConfig: default
-
       map:
         baseConfig: default
-
       location:
         baseConfig: default
 

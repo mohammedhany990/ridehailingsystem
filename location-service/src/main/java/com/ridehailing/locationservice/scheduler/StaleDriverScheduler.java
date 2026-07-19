@@ -3,23 +3,26 @@ package com.ridehailing.locationservice.scheduler;
 import com.ridehailing.locationservice.client.UserServiceClient;
 import com.ridehailing.locationservice.entity.DriverLocation;
 import com.ridehailing.locationservice.repository.DriverLocationRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class StaleDriverScheduler {
+
     private final DriverLocationRepository locationRepository;
     private final UserServiceClient userServiceClient;
 
     @Scheduled(fixedDelay = 60_000)
+    @CircuitBreaker(name = "user", fallbackMethod = "fallback")
     public void markStaleDriversOffline() {
 
         Instant cutoff = Instant.now().minusSeconds(120);
@@ -36,5 +39,11 @@ public class StaleDriverScheduler {
                 .toList();
 
         userServiceClient.markDriversOffline(driverIds);
+
+        log.info("Marked {} stale drivers offline.", driverIds.size());
+    }
+
+    public void fallback(Throwable t) {
+        log.error("Failed to mark stale drivers offline: {}", t.getMessage(), t);
     }
 }
