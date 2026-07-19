@@ -1,7 +1,6 @@
 package com.ridehailing.rideservice.service;
 
-import com.ridehailing.rideservice.client.MapClient;
-import com.ridehailing.rideservice.client.UserServiceClient;
+
 import com.ridehailing.rideservice.client.dto.RouteRequest;
 import com.ridehailing.rideservice.client.dto.RouteResponse;
 import com.ridehailing.rideservice.common.ApiResponse;
@@ -24,14 +23,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional
 public class RideService {
-
+    private final RideRemoteService rideRemoteService;
     private final RideRepository rideRepository;
-    private final FareRepository fareRepository;
     private final RideMatchingService rideMatchingService;
     private final FareCalculationService fareCalculationService;
-    private final UserServiceClient userServiceClient;
     private final RideMapper rideMapper;
-    private final MapClient mapClient;
 
     public ApiResponse<RideResponse> requestRide(UUID riderId, RideRequest request, String bearerToken) {
 
@@ -80,6 +76,7 @@ public class RideService {
         return ApiResponse.success("Ride accepted", rideMapper.toResponse(saved));
     }
 
+
     public ApiResponse<RideResponse> startRide(UUID rideId, String bearerToken) {
 
         Ride ride = findRide(rideId);
@@ -88,11 +85,10 @@ public class RideService {
 
         Ride saved = rideRepository.save(ride);
 
-        try {
-            userServiceClient.startRide(bearerToken, ride.getDriverId());
-        } catch (Exception ignored) {
-        }
-
+        rideRemoteService.startDriverRide(
+                bearerToken,
+                ride.getDriverId()
+        );
 
         return ApiResponse.success("Ride started", rideMapper.toResponse(saved));
     }
@@ -103,7 +99,7 @@ public class RideService {
 
         ride.complete();
 
-        RouteResponse route = mapClient.route(
+        RouteResponse route = rideRemoteService.getRoute(
                 new RouteRequest(
                         ride.getPickupLat(),
                         ride.getPickupLng(),
@@ -111,7 +107,6 @@ public class RideService {
                         ride.getDropoffLng()
                 )
         );
-
         Fare fare = fareCalculationService.calculate(
                 ride,
                 route.getRoute().getDistanceKm(),
@@ -122,13 +117,13 @@ public class RideService {
 
         Ride saved = rideRepository.save(ride);
 
-        try {
-            userServiceClient.finishRide(bearerToken, ride.getDriverId());
-        } catch (Exception ignored) {
-        }
-
+        rideRemoteService.finishDriverRide(
+                bearerToken,
+                ride.getDriverId()
+        );
         return ApiResponse.success("Ride completed", rideMapper.toResponse(saved));
     }
+
 
     public ApiResponse<RideResponse> cancelRide(UUID rideId, CancelRideRequest request) {
 

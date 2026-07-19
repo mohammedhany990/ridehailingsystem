@@ -4,6 +4,7 @@ package com.ridehailing.rideservice.controller;
 import com.ridehailing.rideservice.common.ApiResponse;
 import com.ridehailing.rideservice.dto.*;
 import com.ridehailing.rideservice.service.RideService;
+import com.ridehailing.rideservice.utils.JwtUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class RideController {
 
     private final RideService rideService;
+    private final JwtUtils jwtUtils;
 
 
     @PostMapping("/request")
@@ -29,7 +31,7 @@ public class RideController {
             @Valid @RequestBody RideRequest request,
             @RequestHeader("Authorization") String bearerToken
     ) {
-        UUID riderId = UUID.fromString(jwt.getClaim("userId").toString());
+        UUID riderId = jwtUtils.getUserId(jwt);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(rideService.requestRide(riderId, request, bearerToken));
     }
@@ -82,7 +84,7 @@ public class RideController {
     public ResponseEntity<ApiResponse<List<RideResponse>>> getRiderHistory(
             @AuthenticationPrincipal Jwt jwt
     ) {
-        UUID riderId = UUID.fromString(jwt.getClaim("userId").toString());
+        UUID riderId = jwtUtils.getUserId(jwt);
         return ResponseEntity.ok(rideService.getRiderHistory(riderId));
     }
 

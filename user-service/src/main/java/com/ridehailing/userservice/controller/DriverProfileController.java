@@ -5,6 +5,7 @@ import com.ridehailing.userservice.common.ApiResponse;
 import com.ridehailing.userservice.dto.*;
 import com.ridehailing.userservice.entity.DriverStatus;
 import com.ridehailing.userservice.service.DriverProfileService;
+import com.ridehailing.userservice.utils.JwtUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class DriverProfileController {
 
     private final DriverProfileService driverProfileService;
+    private final JwtUtils jwtUtils;
 
 
     @PostMapping
@@ -31,7 +33,7 @@ public class DriverProfileController {
             @Valid @RequestBody CreateDriverRequest request
     ) {
 
-        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
+        UUID userId = jwtUtils.getUserId(jwt);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(driverProfileService.registerDriverProfile(userId, request));
@@ -49,7 +51,7 @@ public class DriverProfileController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<DriverProfileDetailsResponse>> getMyProfile(@AuthenticationPrincipal Jwt jwt) {
 
-        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
+        UUID userId = jwtUtils.getUserId(jwt);
 
         return ResponseEntity
                 .ok(driverProfileService.getDriverProfile(userId));
@@ -59,7 +61,7 @@ public class DriverProfileController {
     @GetMapping("/me/status")
     public ResponseEntity<ApiResponse<String>> getDriverStatus(@AuthenticationPrincipal Jwt jwt) {
 
-        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
+        UUID userId = jwtUtils.getUserId(jwt);
 
         return ResponseEntity
                 .ok(driverProfileService.getDriverStatus(userId));
@@ -76,7 +78,7 @@ public class DriverProfileController {
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody UpdateDriverStatusRequest request
     ) {
-        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
+        UUID userId = jwtUtils.getUserId(jwt);
 
         return ResponseEntity.ok(
                 driverProfileService.updateDriverStatus(userId, request.getStatus())
@@ -92,7 +94,7 @@ public class DriverProfileController {
     @PutMapping("/me/online")
     public ResponseEntity<ApiResponse<String>> goOnline(@AuthenticationPrincipal Jwt jwt) {
 
-        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
+        UUID userId = jwtUtils.getUserId(jwt);
 
         return ResponseEntity
                 .ok(driverProfileService.goOnline(userId));
@@ -102,7 +104,7 @@ public class DriverProfileController {
     @PutMapping("/me/offline")
     public ResponseEntity<ApiResponse<String>> goOffline(@AuthenticationPrincipal Jwt jwt) {
 
-        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
+        UUID userId = jwtUtils.getUserId(jwt);
 
         return ResponseEntity
                 .ok(driverProfileService.goOffline(userId));
@@ -112,7 +114,7 @@ public class DriverProfileController {
     @PutMapping("/me/start-ride")
     public ResponseEntity<ApiResponse<String>> startRide(@AuthenticationPrincipal Jwt jwt) {
 
-        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
+        UUID userId = jwtUtils.getUserId(jwt);
 
         return ResponseEntity
                 .ok(driverProfileService.startRide(userId));
@@ -122,7 +124,7 @@ public class DriverProfileController {
     @PutMapping("/me/finish-ride")
     public ResponseEntity<ApiResponse<String>> finishRide(@AuthenticationPrincipal Jwt jwt) {
 
-        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
+        UUID userId = jwtUtils.getUserId(jwt);
 
         return ResponseEntity
                 .ok(driverProfileService.finishRide(userId));
@@ -136,7 +138,7 @@ public class DriverProfileController {
             @RequestParam Double lng
     ) {
 
-        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
+        UUID userId = jwtUtils.getUserId(jwt);
 
         return ResponseEntity
                 .ok(driverProfileService.updateLocation(userId, lat, lng));
@@ -146,7 +148,7 @@ public class DriverProfileController {
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<String>> deleteDriverProfile(@AuthenticationPrincipal Jwt jwt) {
 
-        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
+        UUID userId = jwtUtils.getUserId(jwt);
 
         return ResponseEntity
                 .ok(driverProfileService.deleteDriverProfile(userId));

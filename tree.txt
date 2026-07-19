@@ -1,0 +1,623 @@
+.
+├── api-gateway
+│   ├── Dockerfile
+│   ├── HELP.md
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   ├── pom.xml
+│   ├── src
+│   │   ├── main
+│   │   │   ├── java
+│   │   │   │   └── com
+│   │   │   │       └── ridehailing
+│   │   │   │           └── apigateway
+│   │   │   │               └── ApiGatewayApplication.java
+│   │   │   └── resources
+│   │   │       └── application.yml
+│   │   └── test
+│   │       └── java
+│   │           └── com
+│   │               └── ridehailing
+│   │                   └── apigateway
+│   │                       └── ApiGatewayApplicationTests.java
+│   └── target
+│       ├── classes
+│       │   ├── application.yml
+│       │   └── com
+│       │       └── ridehailing
+│       │           └── apigateway
+│       │               └── ApiGatewayApplication.class
+│       ├── generated-sources
+│       │   └── annotations
+│       ├── generated-test-sources
+│       │   └── test-annotations
+│       ├── maven-status
+│       │   └── maven-compiler-plugin
+│       │       ├── compile
+│       │       │   └── default-compile
+│       │       │       ├── createdFiles.lst
+│       │       │       └── inputFiles.lst
+│       │       └── testCompile
+│       │           └── default-testCompile
+│       │               ├── createdFiles.lst
+│       │               └── inputFiles.lst
+│       ├── surefire-reports
+│       │   ├── com.ridehailing.apigateway.ApiGatewayApplicationTests.txt
+│       │   └── TEST-com.ridehailing.apigateway.ApiGatewayApplicationTests.xml
+│       └── test-classes
+│           └── com
+│               └── ridehailing
+│                   └── apigateway
+│                       └── ApiGatewayApplicationTests.class
+├── auth-service
+│   ├── Dockerfile
+│   ├── HELP.md
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   ├── pom.xml
+│   ├── src
+│   │   ├── main
+│   │   │   ├── java
+│   │   │   │   └── com
+│   │   │   │       └── ridehailing
+│   │   │   │           └── authservice
+│   │   │   │               ├── AuthServiceApplication.java
+│   │   │   │               ├── client
+│   │   │   │               │   └── NotificationClient.java
+│   │   │   │               ├── common
+│   │   │   │               │   └── ApiResponse.java
+│   │   │   │               ├── config
+│   │   │   │               │   ├── AsyncConfig.java
+│   │   │   │               │   ├── RedisConfig.java
+│   │   │   │               │   ├── SecurityConfig.java
+│   │   │   │               │   └── SwaggerConfig.java
+│   │   │   │               ├── controller
+│   │   │   │               │   └── AuthController.java
+│   │   │   │               ├── dto
+│   │   │   │               │   ├── AuthResponse.java
+│   │   │   │               │   ├── ForgotPasswordRequest.java
+│   │   │   │               │   ├── LoginRequest.java
+│   │   │   │               │   ├── RegisterRequest.java
+│   │   │   │               │   ├── ResendVerificationOtpRequest.java
+│   │   │   │               │   ├── ResetPasswordRequest.java
+│   │   │   │               │   └── VerifyEmailRequest.java
+│   │   │   │               ├── email
+│   │   │   │               │   ├── EmailDetails.java
+│   │   │   │               │   └── EmailService.java
+│   │   │   │               ├── entity
+│   │   │   │               │   ├── Role.java
+│   │   │   │               │   └── User.java
+│   │   │   │               ├── exception
+│   │   │   │               │   ├── BaseException.java
+│   │   │   │               │   ├── EmailSendingException.java
+│   │   │   │               │   ├── EmailVerifiedException.java
+│   │   │   │               │   ├── GlobalExceptionHandler.java
+│   │   │   │               │   ├── InvalidOtpException.java
+│   │   │   │               │   ├── InvalidRefreshToken.java
+│   │   │   │               │   ├── InvalidRoleException.java
+│   │   │   │               │   ├── OtpExpiredException.java
+│   │   │   │               │   ├── TooManyAttemptsException.java
+│   │   │   │               │   ├── TooManyRequestsException.java
+│   │   │   │               │   ├── UnauthorizedException.java
+│   │   │   │               │   ├── UserAlreadyExistsException.java
+│   │   │   │               │   └── UserNotFoundException.java
+│   │   │   │               ├── otp
+│   │   │   │               │   ├── OtpData.java
+│   │   │   │               │   ├── OtpGenerator.java
+│   │   │   │               │   ├── OtpKeyProvider.java
+│   │   │   │               │   ├── OtpRateLimiter.java
+│   │   │   │               │   ├── OtpService.java
+│   │   │   │               │   ├── OtpStore.java
+│   │   │   │               │   ├── OtpType.java
+│   │   │   │               │   ├── RedisOtpRateLimiter.java
+│   │   │   │               │   └── RedisOtpStore.java
+│   │   │   │               ├── repository
+│   │   │   │               │   └── UserRepository.java
+│   │   │   │               ├── security
+│   │   │   │               │   ├── filter
+│   │   │   │               │   │   └── JwtAuthFilter.java
+│   │   │   │               │   └── jwt
+│   │   │   │               │       └── JwtTokenService.java
+│   │   │   │               └── service
+│   │   │   │                   └── AuthService.java
+│   │   │   └── resources
+│   │   │       └── application.yml
+│   │   └── test
+│   │       └── java
+│   │           └── com
+│   │               └── ridehailing
+│   │                   └── authservice
+│   │                       └── AuthServiceApplicationTests.java
+│   └── target
+│       ├── classes
+│       │   ├── application.yml
+│       │   └── com
+│       │       └── ridehailing
+│       │           └── authservice
+│       │               ├── AuthServiceApplication.class
+│       │               ├── client
+│       │               │   └── NotificationClient.class
+│       │               ├── common
+│       │               │   ├── ApiResponse$ApiResponseBuilder.class
+│       │               │   └── ApiResponse.class
+│       │               ├── config
+│       │               │   ├── AsyncConfig.class
+│       │               │   ├── RedisConfig.class
+│       │               │   ├── SecurityConfig.class
+│       │               │   └── SwaggerConfig.class
+│       │               ├── controller
+│       │               │   └── AuthController.class
+│       │               ├── dto
+│       │               │   ├── AuthResponse$AuthResponseBuilder.class
+│       │               │   ├── AuthResponse.class
+│       │               │   ├── ForgotPasswordRequest$ForgotPasswordRequestBuilder.class
+│       │               │   ├── ForgotPasswordRequest.class
+│       │               │   ├── LoginRequest$LoginRequestBuilder.class
+│       │               │   ├── LoginRequest.class
+│       │               │   ├── RegisterRequest$RegisterRequestBuilder.class
+│       │               │   ├── RegisterRequest.class
+│       │               │   ├── ResendVerificationOtpRequest$ResendVerificationOtpRequestBuilder.class
+│       │               │   ├── ResendVerificationOtpRequest.class
+│       │               │   ├── ResetPasswordRequest$ResetPasswordRequestBuilder.class
+│       │               │   ├── ResetPasswordRequest.class
+│       │               │   ├── VerifyEmailRequest$VerifyEmailRequestBuilder.class
+│       │               │   └── VerifyEmailRequest.class
+│       │               ├── email
+│       │               │   ├── EmailDetails$EmailDetailsBuilder.class
+│       │               │   ├── EmailDetails.class
+│       │               │   └── EmailService.class
+│       │               ├── entity
+│       │               │   ├── Role.class
+│       │               │   ├── User$UserBuilder.class
+│       │               │   └── User.class
+│       │               ├── exception
+│       │               │   ├── BaseException.class
+│       │               │   ├── EmailSendingException.class
+│       │               │   ├── EmailVerifiedException.class
+│       │               │   ├── GlobalExceptionHandler.class
+│       │               │   ├── InvalidOtpException.class
+│       │               │   ├── InvalidRefreshToken.class
+│       │               │   ├── InvalidRoleException.class
+│       │               │   ├── OtpExpiredException.class
+│       │               │   ├── TooManyAttemptsException.class
+│       │               │   ├── TooManyRequestsException.class
+│       │               │   ├── UnauthorizedException.class
+│       │               │   ├── UserAlreadyExistsException.class
+│       │               │   └── UserNotFoundException.class
+│       │               ├── otp
+│       │               │   ├── OtpData.class
+│       │               │   ├── OtpGenerator.class
+│       │               │   ├── OtpKeyProvider.class
+│       │               │   ├── OtpRateLimiter.class
+│       │               │   ├── OtpService.class
+│       │               │   ├── OtpStore.class
+│       │               │   ├── OtpType.class
+│       │               │   ├── RedisOtpRateLimiter.class
+│       │               │   └── RedisOtpStore.class
+│       │               ├── repository
+│       │               │   └── UserRepository.class
+│       │               ├── security
+│       │               │   ├── filter
+│       │               │   │   └── JwtAuthFilter.class
+│       │               │   └── jwt
+│       │               │       └── JwtTokenService.class
+│       │               └── service
+│       │                   └── AuthService.class
+│       └── generated-sources
+│           └── annotations
+├── docker-compose.yml
+├── eureka-server
+│   ├── Dockerfile
+│   ├── HELP.md
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   ├── pom.xml
+│   ├── src
+│   │   ├── main
+│   │   │   ├── java
+│   │   │   │   └── com
+│   │   │   │       └── ridehailing
+│   │   │   │           └── eurekaserver
+│   │   │   │               └── EurekaServerApplication.java
+│   │   │   └── resources
+│   │   │       ├── application.yml
+│   │   │       ├── static
+│   │   │       └── templates
+│   │   └── test
+│   │       └── java
+│   │           └── com
+│   │               └── ridehailing
+│   │                   └── eurekaserver
+│   │                       └── EurekaServerApplicationTests.java
+│   └── target
+│       ├── classes
+│       │   ├── application.yml
+│       │   └── com
+│       │       └── ridehailing
+│       │           └── eurekaserver
+│       │               └── EurekaServerApplication.class
+│       └── generated-sources
+│           └── annotations
+├── HELP.md
+├── location-service
+│   ├── Dockerfile
+│   ├── HELP.md
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   ├── pom.xml
+│   └── src
+│       ├── main
+│       │   ├── java
+│       │   │   └── com
+│       │   │       └── ridehailing
+│       │   │           └── locationservice
+│       │   │               ├── client
+│       │   │               │   └── UserServiceClient.java
+│       │   │               ├── common
+│       │   │               │   └── ApiResponse.java
+│       │   │               ├── config
+│       │   │               │   ├── JwtConfig.java
+│       │   │               │   ├── RedisConfig.java
+│       │   │               │   ├── SecurityConfig.java
+│       │   │               │   ├── SwaggerConfig.java
+│       │   │               │   └── WebSocketConfig.java
+│       │   │               ├── controller
+│       │   │               │   └── LocationController.java
+│       │   │               ├── dto
+│       │   │               │   ├── DriverLocationCache.java
+│       │   │               │   ├── DriverSnapshot.java
+│       │   │               │   ├── LocationHistoryResponse.java
+│       │   │               │   ├── LocationResponse.java
+│       │   │               │   ├── NearbyDriversRequest.java
+│       │   │               │   ├── NearbyDriversResponse.java
+│       │   │               │   └── UpdateLocationRequest.java
+│       │   │               ├── entity
+│       │   │               │   ├── DriverLocation.java
+│       │   │               │   └── LocationHistory.java
+│       │   │               ├── exception
+│       │   │               │   ├── BaseException.java
+│       │   │               │   ├── DriverNotFoundException.java
+│       │   │               │   └── GlobalExceptionHandler.java
+│       │   │               ├── LocationServiceApplication.java
+│       │   │               ├── mapper
+│       │   │               │   └── LocationMapper.java
+│       │   │               ├── repository
+│       │   │               │   ├── DriverLocationRepository.java
+│       │   │               │   └── LocationHistoryRepository.java
+│       │   │               ├── scheduler
+│       │   │               │   └── StaleDriverScheduler.java
+│       │   │               ├── service
+│       │   │               │   ├── LocationService.java
+│       │   │               │   └── RedisLocationService.java
+│       │   │               ├── util
+│       │   │               │   └── GeoUtils.java
+│       │   │               └── websocket
+│       │   │                   └── LocationBroadcaster.java
+│       │   └── resources
+│       │       └── application.yaml
+│       └── test
+│           └── java
+│               └── com
+│                   └── ridehailing
+│                       └── locationservice
+│                           └── LocationServiceApplicationTests.java
+├── map-service
+│   ├── Dockerfile
+│   ├── HELP.md
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   ├── pom.xml
+│   └── src
+│       ├── main
+│       │   ├── java
+│       │   │   └── com
+│       │   │       └── ridehailing
+│       │   │           └── mapservice
+│       │   │               ├── client
+│       │   │               │   └── OsrmClient.java
+│       │   │               ├── config
+│       │   │               │   ├── RestClientConfig.java
+│       │   │               │   └── SwaggerConfig.java
+│       │   │               ├── controller
+│       │   │               │   └── MapController.java
+│       │   │               ├── dto
+│       │   │               │   ├── OsrmResponse.java
+│       │   │               │   ├── RouteInfo.java
+│       │   │               │   ├── RouteRequest.java
+│       │   │               │   └── RouteResponse.java
+│       │   │               ├── MapServiceApplication.java
+│       │   │               └── service
+│       │   │                   └── MapService.java
+│       │   └── resources
+│       │       └── application.yaml
+│       └── test
+│           └── java
+│               └── com
+│                   └── ridehailing
+│                       └── mapservice
+│                           └── MapServiceApplicationTests.java
+├── mongodb
+│   └── init
+│       └── 01-seed.js
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+├── pom.xml.save
+├── postgres
+│   └── init
+│       ├── 00-init-databases.sql
+│       ├── 01-auth.sql
+│       ├── 02-user.sql
+│       ├── 03-ride.sql
+│       ├── 04-payment.sql
+│       ├── 05-pricing.sql
+│       └── 06-rating.sql
+├── pricing-service
+│   ├── Dockerfile
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   ├── pom.xml
+│   └── src
+│       └── main
+│           ├── java
+│           │   └── com
+│           │       └── ridehailing
+│           │           └── pricingservice
+│           │               ├── config
+│           │               │   ├── DataSeeder.java
+│           │               │   ├── JwtConfig.java
+│           │               │   └── SecurityConfig.java
+│           │               ├── controller
+│           │               │   └── PricingController.java
+│           │               ├── dto
+│           │               │   ├── ApiResponse.java
+│           │               │   ├── FareCalculationRequest.java
+│           │               │   ├── FareCalculationResponse.java
+│           │               │   ├── FareEstimateRequest.java
+│           │               │   └── FareEstimateResponse.java
+│           │               ├── entity
+│           │               │   ├── FareCalculation.java
+│           │               │   └── FareRule.java
+│           │               ├── PricingServiceApplication.java
+│           │               ├── repository
+│           │               │   ├── FareCalculationRepository.java
+│           │               │   └── FareRuleRepository.java
+│           │               └── service
+│           │                   ├── PricingService.java
+│           │                   └── SurgeService.java
+│           └── resources
+│               └── application.yml
+├── rating-service
+│   ├── Dockerfile
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   ├── pom.xml
+│   └── src
+│       └── main
+│           ├── java
+│           │   └── com
+│           │       └── ridehailing
+│           │           └── ratingservice
+│           │               ├── config
+│           │               │   ├── JwtConfig.java
+│           │               │   └── SecurityConfig.java
+│           │               ├── controller
+│           │               │   └── RatingController.java
+│           │               ├── dto
+│           │               │   ├── ApiResponse.java
+│           │               │   ├── RatingResponse.java
+│           │               │   ├── RatingSummaryResponse.java
+│           │               │   └── SubmitRatingRequest.java
+│           │               ├── entity
+│           │               │   ├── PartyType.java
+│           │               │   └── Rating.java
+│           │               ├── RatingServiceApplication.java
+│           │               ├── repository
+│           │               │   └── RatingRepository.java
+│           │               └── service
+│           │                   └── RatingService.java
+│           └── resources
+│               └── application.yml
+├── README.md
+├── ride-service
+│   ├── Dockerfile
+│   ├── HELP.md
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   ├── pom.xml
+│   └── src
+│       ├── main
+│       │   ├── java
+│       │   │   └── com
+│       │   │       └── ridehailing
+│       │   │           └── rideservice
+│       │   │               ├── client
+│       │   │               │   ├── dto
+│       │   │               │   │   ├── LocationApiResponse.java
+│       │   │               │   │   ├── NearbyDriversRequest.java
+│       │   │               │   │   ├── NearbyDriversResponse.java
+│       │   │               │   │   ├── NotificationRequest.java
+│       │   │               │   │   ├── PricingCalculationRequest.java
+│       │   │               │   │   ├── PricingCalculationResponse.java
+│       │   │               │   │   ├── RouteInfo.java
+│       │   │               │   │   ├── RouteRequest.java
+│       │   │               │   │   ├── RouteResponse.java
+│       │   │               │   │   └── UserApiResponse.java
+│       │   │               │   ├── LocationServiceClient.java
+│       │   │               │   ├── MapClient.java
+│       │   │               │   ├── NotificationClient.java
+│       │   │               │   ├── PricingClient.java
+│       │   │               │   └── UserServiceClient.java
+│       │   │               ├── common
+│       │   │               │   └── ApiResponse.java
+│       │   │               ├── config
+│       │   │               │   ├── JwtConfig.java
+│       │   │               │   ├── SecurityConfig.java
+│       │   │               │   └── SwaggerConfig.java
+│       │   │               ├── controller
+│       │   │               │   └── RideController.java
+│       │   │               ├── dto
+│       │   │               │   ├── AcceptRideRequest.java
+│       │   │               │   ├── CancellationResponse.java
+│       │   │               │   ├── CancelRideRequest.java
+│       │   │               │   ├── FareResponse.java
+│       │   │               │   ├── RideRequest.java
+│       │   │               │   └── RideResponse.java
+│       │   │               ├── entity
+│       │   │               │   ├── Fare.java
+│       │   │               │   ├── RideCancellation.java
+│       │   │               │   ├── Ride.java
+│       │   │               │   └── RideStatus.java
+│       │   │               ├── exception
+│       │   │               │   ├── BaseException.java
+│       │   │               │   ├── DriverNotAvailableException.java
+│       │   │               │   ├── GlobalExceptionHandler.java
+│       │   │               │   ├── InvalidRideStateException.java
+│       │   │               │   ├── NoAvailableDriverException.java
+│       │   │               │   └── RideNotFoundException.java
+│       │   │               ├── mapper
+│       │   │               │   └── RideMapper.java
+│       │   │               ├── repository
+│       │   │               │   ├── FareRepository.java
+│       │   │               │   └── RideRepository.java
+│       │   │               ├── RideServiceApplication.java
+│       │   │               ├── service
+│       │   │               │   ├── FareCalculationService.java
+│       │   │               │   ├── RideMatchingService.java
+│       │   │               │   └── RideService.java
+│       │   │               └── utils
+│       │   │                   └── JwtUtils.java
+│       │   └── resources
+│       │       └── application.yaml
+│       └── test
+│           └── java
+│               └── com
+│                   └── ridehailing
+│                       └── rideservice
+│                           └── RideServiceApplicationTests.java
+└── user-service
+    ├── Dockerfile
+    ├── HELP.md
+    ├── mvnw
+    ├── mvnw.cmd
+    ├── pom.xml
+    ├── src
+    │   ├── main
+    │   │   ├── java
+    │   │   │   └── com
+    │   │   │       └── ridehailing
+    │   │   │           └── userservice
+    │   │   │               ├── common
+    │   │   │               │   └── ApiResponse.java
+    │   │   │               ├── config
+    │   │   │               │   ├── JwtConfig.java
+    │   │   │               │   ├── SecurityConfig.java
+    │   │   │               │   └── SwaggerConfig.java
+    │   │   │               ├── controller
+    │   │   │               │   ├── DriverProfileController.java
+    │   │   │               │   └── VehicleController.java
+    │   │   │               ├── dto
+    │   │   │               │   ├── CreateDriverRequest.java
+    │   │   │               │   ├── CreateVehicleRequest.java
+    │   │   │               │   ├── DriverProfileDetailsResponse.java
+    │   │   │               │   ├── DriverProfileResponse.java
+    │   │   │               │   ├── DriverRatingResponse.java
+    │   │   │               │   ├── RateDriverRequest.java
+    │   │   │               │   ├── StatusResponse.java
+    │   │   │               │   ├── UpdateDriverStatusRequest.java
+    │   │   │               │   ├── UpdateVehicleRequest.java
+    │   │   │               │   └── VehicleResponse.java
+    │   │   │               ├── entity
+    │   │   │               │   ├── DriverProfile.java
+    │   │   │               │   ├── DriverStatus.java
+    │   │   │               │   └── Vehicle.java
+    │   │   │               ├── exception
+    │   │   │               │   ├── BaseException.java
+    │   │   │               │   ├── DriverProfileAlreadyExistsException.java
+    │   │   │               │   ├── DriverProfileNotFoundException.java
+    │   │   │               │   ├── GlobalExceptionHandler.java
+    │   │   │               │   ├── InvalidDriverStateException.java
+    │   │   │               │   ├── LicenseNumberAlreadyExistsException.java
+    │   │   │               │   └── PlateNumberAlreadyExistsException.java
+    │   │   │               ├── repository
+    │   │   │               │   ├── DriverProfileRepository.java
+    │   │   │               │   └── VehicleRepository.java
+    │   │   │               ├── service
+    │   │   │               │   ├── DriverProfileService.java
+    │   │   │               │   └── VehicleService.java
+    │   │   │               ├── UserServiceApplication.java
+    │   │   │               └── utils
+    │   │   │                   └── JwtUtils.java
+    │   │   └── resources
+    │   │       └── application.yaml
+    │   └── test
+    │       └── java
+    │           └── com
+    │               └── ridehailing
+    │                   └── userservice
+    │                       └── UserServiceApplicationTests.java
+    └── target
+        ├── classes
+        │   ├── application.yaml
+        │   └── com
+        │       └── ridehailing
+        │           └── userservice
+        │               ├── common
+        │               │   ├── ApiResponse$ApiResponseBuilder.class
+        │               │   └── ApiResponse.class
+        │               ├── config
+        │               │   ├── JwtConfig.class
+        │               │   ├── SecurityConfig.class
+        │               │   └── SwaggerConfig.class
+        │               ├── controller
+        │               │   ├── DriverProfileController.class
+        │               │   └── VehicleController.class
+        │               ├── dto
+        │               │   ├── CreateDriverRequest$CreateDriverRequestBuilder.class
+        │               │   ├── CreateDriverRequest.class
+        │               │   ├── CreateVehicleRequest$CreateVehicleRequestBuilder.class
+        │               │   ├── CreateVehicleRequest.class
+        │               │   ├── DriverProfileDetailsResponse$DriverProfileDetailsResponseBuilder.class
+        │               │   ├── DriverProfileDetailsResponse.class
+        │               │   ├── DriverProfileResponse$DriverProfileResponseBuilder.class
+        │               │   ├── DriverProfileResponse.class
+        │               │   ├── DriverRatingResponse$DriverRatingResponseBuilder.class
+        │               │   ├── DriverRatingResponse.class
+        │               │   ├── RateDriverRequest$RateDriverRequestBuilder.class
+        │               │   ├── RateDriverRequest.class
+        │               │   ├── StatusResponse$StatusResponseBuilder.class
+        │               │   ├── StatusResponse.class
+        │               │   ├── UpdateDriverStatusRequest$UpdateDriverStatusRequestBuilder.class
+        │               │   ├── UpdateDriverStatusRequest.class
+        │               │   ├── UpdateVehicleRequest$UpdateVehicleRequestBuilder.class
+        │               │   ├── UpdateVehicleRequest.class
+        │               │   ├── VehicleResponse$VehicleResponseBuilder.class
+        │               │   └── VehicleResponse.class
+        │               ├── entity
+        │               │   ├── DriverProfile$DriverProfileBuilder.class
+        │               │   ├── DriverProfile.class
+        │               │   ├── DriverStatus.class
+        │               │   ├── Vehicle$VehicleBuilder.class
+        │               │   └── Vehicle.class
+        │               ├── exception
+        │               │   ├── BaseException.class
+        │               │   ├── DriverProfileAlreadyExistsException.class
+        │               │   ├── DriverProfileNotFoundException.class
+        │               │   ├── GlobalExceptionHandler.class
+        │               │   ├── InvalidDriverStateException.class
+        │               │   ├── LicenseNumberAlreadyExistsException.class
+        │               │   └── PlateNumberAlreadyExistsException.class
+        │               ├── repository
+        │               │   ├── DriverProfileRepository.class
+        │               │   └── VehicleRepository.class
+        │               ├── service
+        │               │   ├── DriverProfileService$1.class
+        │               │   ├── DriverProfileService.class
+        │               │   └── VehicleService.class
+        │               ├── UserServiceApplication.class
+        │               └── utils
+        │                   └── JwtUtils.class
+        └── generated-sources
+            └── annotations
+
+243 directories, 378 files
