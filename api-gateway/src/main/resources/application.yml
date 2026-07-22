@@ -1,5 +1,6 @@
 server:
   port: 8888
+  forward-headers-strategy: framework
 
 spring:
   application:
@@ -12,6 +13,28 @@ spring:
 
   cloud:
     gateway:
+
+      default-filters:
+        - AddResponseHeader=X-Content-Type-Options, nosniff
+        - AddResponseHeader=X-Frame-Options, DENY
+        - AddResponseHeader=Referrer-Policy, no-referrer
+        - AddResponseHeader=X-XSS-Protection, 1; mode=block
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
       routes:
 
         - id: auth-service
@@ -22,9 +45,9 @@ spring:
             - StripPrefix=1
             - name: RequestRateLimiter
               args:
+                key-resolver: "#{@ipKeyResolver}"
                 redis-rate-limiter.replenishRate: 5
                 redis-rate-limiter.burstCapacity: 10
-                key-resolver: "#{@ipKeyResolver}"
 
         - id: user-service
           uri: lb://USER-SERVICE
@@ -34,9 +57,9 @@ spring:
             - StripPrefix=1
             - name: RequestRateLimiter
               args:
+                key-resolver: "#{@userKeyResolver}"
                 redis-rate-limiter.replenishRate: 20
                 redis-rate-limiter.burstCapacity: 40
-                key-resolver: "#{@userKeyResolver}"
 
         - id: ride-service
           uri: lb://RIDE-SERVICE
@@ -46,9 +69,9 @@ spring:
             - StripPrefix=1
             - name: RequestRateLimiter
               args:
+                key-resolver: "#{@userKeyResolver}"
                 redis-rate-limiter.replenishRate: 20
                 redis-rate-limiter.burstCapacity: 40
-                key-resolver: "#{@userKeyResolver}"
 
         - id: location-service
           uri: lb://LOCATION-SERVICE
@@ -58,9 +81,19 @@ spring:
             - StripPrefix=1
             - name: RequestRateLimiter
               args:
+                key-resolver: "#{@userKeyResolver}"
                 redis-rate-limiter.replenishRate: 60
                 redis-rate-limiter.burstCapacity: 120
-                key-resolver: "#{@userKeyResolver}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+
+  endpoint:
+    health:
+      show-details: always
 
 eureka:
   client:
@@ -71,4 +104,7 @@ eureka:
 
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: INFO
+    org.springframework.security.oauth2: INFO
+    com.ridehailing.apigateway: INFO
