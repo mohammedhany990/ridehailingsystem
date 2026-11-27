@@ -40,6 +40,28 @@ register_and_verify "E2E Driver" "$DRIVER_EMAIL" DRIVER
 
 RIDER_TOKEN=$(login "$RIDER_EMAIL"); [ -n "$RIDER_TOKEN" ] || fail "rider login"
 DRIVER_TOKEN=$(login "$DRIVER_EMAIL"); [ -n "$DRIVER_TOKEN" ] || fail "driver login"
+say "rider profile: read, update, avatar"
+PROFILE_NAME=$(curl -fsS "$GW/api/auth/profile/me" -H "Authorization: Bearer $RIDER_TOKEN" | jq -r '.data.name')
+[ -n "$PROFILE_NAME" ] && [ "$PROFILE_NAME" != "null" ] || fail "profile read"
+
+NEW_NAME="E2E Rider Updated"
+UPDATED=$(curl -fsS -X PUT "$GW/api/auth/profile/me" -H "Authorization: Bearer $RIDER_TOKEN" -H 'Content-Type: application/json' \
+  -d "{\"name\":\"$NEW_NAME\",\"phone\":\"+201099040294\"}" | jq -r '.data.name')
+[ "$UPDATED" = "$NEW_NAME" ] || fail "profile update"
+
+printf 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' | base64 -d > /tmp/e2e-avatar.png
+AVATAR_URL=$(curl -fsS -X POST "$GW/api/auth/profile/me/avatar" -H "Authorization: Bearer $RIDER_TOKEN" \
+  -F "file=@/tmp/e2e-avatar.png;type=image/png" | jq -r '.data.avatarUrl')
+[ -n "$AVATAR_URL" ] && [ "$AVATAR_URL" != "null" ] || fail "avatar upload"
+
+RIDER_ID=$(curl -fsS "$GW/api/auth/profile/me" -H "Authorization: Bearer $RIDER_TOKEN" | jq -r '.data.id')
+AVATAR_CT=$(curl -fsS -o /dev/null -w '%{content_type}' "$GW/api/auth/profile/avatar/$RIDER_ID" -H "Authorization: Bearer $RIDER_TOKEN")
+[ "$AVATAR_CT" = "image/png" ] || fail "avatar fetch content-type $AVATAR_CT"
+
+BAD_CT=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$GW/api/auth/profile/me/avatar" -H "Authorization: Bearer $RIDER_TOKEN" \
+  -F "file=@scripts/e2e.sh;type=image/png")
+[ "$BAD_CT" = "400" ] || fail "invalid avatar rejected with $BAD_CT, expected 400"
+
 DRIVER_ID=$(echo "$DRIVER_TOKEN" | cut -d. -f2 | tr '_-' '/+' | { read p; pad=$(( (4 - ${#p} % 4) % 4 )); echo "$p$(printf '=%.0s' $(seq 1 $pad))"; } | base64 -d 2>/dev/null | jq -r .userId)
 [ -n "$DRIVER_ID" ] || fail "driver id from JWT"
 

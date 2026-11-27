@@ -46,6 +46,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String phone;
 
+    private String avatarFilename;
+
     @Column(name = "password_hash")
     private String password;
 
