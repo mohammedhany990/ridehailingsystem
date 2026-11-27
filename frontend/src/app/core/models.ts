@@ -37,6 +37,8 @@ export interface Ride {
   startedAt: string | null;
   completedAt: string | null;
   fare: Fare | null;
+  proposedFare: number | null;
+  negotiatedAmount: number | null;
   cancellation: { reason: string; cancelledBy: string; cancelledAt: string; cancellationFee: number | null } | null;
 }
 
@@ -114,4 +116,14 @@ export interface VehicleTier {
   description: string;
   icon: string;
   capacity: number;
+}
+
+export interface FareOffer {
+  id: string;
+  rideId: string;
+  driverId: string;
+  amount: number;
+  currency: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'SUPERSEDED' | 'EXPIRED';
+  createdAt: string;
 }

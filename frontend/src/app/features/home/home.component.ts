@@ -7,7 +7,7 @@ import { DriverHomeComponent } from '../driver/driver-home.component';
 import { ProfileService } from '../../core/profile.service';
 import { RideService } from '../../core/ride.service';
 import { TPipe } from '../../shared/t.pipe';
-import { FareEstimate, Ride } from '../../core/models';
+import { FareEstimate, FareOffer, Ride } from '../../core/models';
 import { ApiService } from '../../core/api.service';
 
 type Stage = 'pickup' | 'dropoff' | 'estimate' | 'requested' | 'active' | 'done';
@@ -62,6 +62,13 @@ const TIERS: TierOption[] = [
           <div class="promo-msg" [class.bad]="promoBad()">{{ promoMessage() }}</div>
         }
 
+        <div class="offer-row">
+          <input #offerInput type="number" inputmode="decimal" min="1" [placeholder]="'home.offerYourFare' | t" [value]="proposedFare() ?? ''" (input)="onProposedInput(offerInput.value)" />
+          @if (suggestedFare() !== null) {
+            <button type="button" class="chip" (click)="applySuggested(offerInput)">{{ suggestedFare() | number: '1.0-0' }} EGP</button>
+          }
+        </div>
+
         <div class="tiers">
           @for (tier of tiers(); track tier.type) {
             <button type="button" class="tier" [class.selected]="selectedTier() === tier.type" (click)="selectTier(tier.type)">
@@ -108,6 +115,27 @@ const TIERS: TierOption[] = [
       <div class="sheet small">
         <div class="status-pulse"><span class="pulse"></span></div>
         <h2>{{ 'home.findingDriver' | t }}</h2>
+        @if (ride()?.proposedFare; as proposed) {
+          <p class="your-offer">{{ 'home.yourOffer' | t }}: {{ proposed | number: '1.0-0' }} EGP</p>
+        }
+        <div class="offer-row counter-row">
+          <input #counterInput type="number" inputmode="decimal" min="1" [placeholder]="'home.counterFare' | t" />
+          <button type="button" class="chip" (click)="counterFare(counterInput.value)">{{ 'home.updateFare' | t }}</button>
+        </div>
+        @if (pendingOffers().length) {
+          <div class="offers">
+            <p class="offers-title">{{ 'home.driverOffers' | t }}</p>
+            @for (offer of pendingOffers(); track offer.id) {
+              <div class="offer-card">
+                <strong>{{ offer.amount | number: '1.0-0' }} {{ offer.currency }}</strong>
+                <div class="offer-actions">
+                  <button type="button" class="offer-accept" (click)="acceptOffer(offer.id)">{{ 'home.acceptOffer' | t }}</button>
+                  <button type="button" class="offer-decline" (click)="declineOffer(offer.id)">{{ 'home.declineOffer' | t }}</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
         <button type="button" class="ghost danger" (click)="cancelRide()">{{ 'home.cancelRide' | t }}</button>
       </div>
     }
@@ -219,6 +247,38 @@ const TIERS: TierOption[] = [
     .pulse { width: 14px; height: 14px; border-radius: 50%; background: var(--brand); animation: pulse-dot 1.2s infinite; }
     .fare-total { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin: 8px 0 14px; }
     .paid-ok { color: var(--accent); font-weight: 700; margin: 10px 0 0; }
+    .offer-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .offer-row input {
+      flex: 1; padding: 11px 14px; border-radius: var(--radius-md);
+      background: var(--bg); border: 1px solid var(--line); color: var(--text); font-size: 13.5px;
+    }
+    .offer-row input:focus { outline: none; border-color: var(--brand); }
+    .chip {
+      padding: 0 16px; border-radius: var(--radius-md); border: 1px solid var(--line);
+      background: var(--bg-card); color: var(--text-dim); font-weight: 700; white-space: nowrap;
+      transition: transform var(--dur-fast) var(--ease-spring);
+    }
+    .chip:active { transform: scale(0.95); }
+    .your-offer { color: var(--text-dim); font-size: 13px; margin: 0 0 8px; }
+    .counter-row { margin-top: 6px; }
+    .offers { text-align: start; margin-top: 10px; }
+    .offers-title { font-size: 12.5px; color: var(--text-dim); margin: 0 0 6px; }
+    .offer-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 11px 14px; border-radius: var(--radius-md); margin-bottom: 8px;
+      background: var(--brand-soft); border: 1.5px solid var(--brand);
+      animation: pop var(--dur-med) var(--ease-out);
+    }
+    .offer-card strong { font-size: 17px; }
+    .offer-actions { display: flex; gap: 8px; }
+    .offer-accept {
+      padding: 8px 16px; border: none; border-radius: var(--radius-sm);
+      background: var(--brand); color: #fff; font-weight: 700;
+    }
+    .offer-decline {
+      padding: 8px 14px; border-radius: var(--radius-sm);
+      border: 1px solid var(--line); background: transparent; color: var(--text-dim); font-weight: 600;
+    }
   `,
 })
 export class HomeComponent implements OnDestroy {
@@ -245,6 +305,15 @@ export class HomeComponent implements OnDestroy {
   readonly paying = signal(false);
   readonly paid = signal(false);
   readonly receipt = signal('');
+  readonly proposedFare = signal<number | null>(null);
+  readonly offers = signal<FareOffer[]>([]);
+
+  readonly pendingOffers = computed(() => this.offers().filter((o) => o.status === 'PENDING'));
+  readonly suggestedFare = computed(() => {
+    const tier = this.tiers().find((x) => x.type === this.selectedTier());
+    if (!tier?.estimate) return null;
+    return Math.round((tier.estimate.estimatedMinFare + tier.estimate.estimatedMaxFare) / 2);
+  });
 
   private pickup: { lat: number; lng: number } | null = null;
   private dropoff: { lat: number; lng: number } | null = null;
@@ -311,6 +380,51 @@ export class HomeComponent implements OnDestroy {
     this.selectedTier.set(type);
   }
 
+  onProposedInput(value: string): void {
+    const parsed = Number(value);
+    this.proposedFare.set(value && Number.isFinite(parsed) && parsed > 0 ? parsed : null);
+  }
+
+  applySuggested(input: HTMLInputElement): void {
+    const suggested = this.suggestedFare();
+    if (suggested === null) return;
+    input.value = String(suggested);
+    this.proposedFare.set(suggested);
+  }
+
+  counterFare(value: string): void {
+    const ride = this.ride();
+    const parsed = Number(value);
+    if (!ride || !value || !Number.isFinite(parsed) || parsed <= 0) return;
+    this.proposedFare.set(parsed);
+    this.rideService.updateProposedFare(ride.id, parsed).subscribe({ error: () => {} });
+  }
+
+  acceptOffer(offerId: string): void {
+    const ride = this.ride();
+    if (!ride) return;
+    this.rideService.acceptOffer(ride.id, offerId).subscribe({
+      next: () => this.refreshOffers(ride.id),
+      error: () => {},
+    });
+  }
+
+  declineOffer(offerId: string): void {
+    const ride = this.ride();
+    if (!ride) return;
+    this.rideService.declineOffer(ride.id, offerId).subscribe({
+      next: () => this.refreshOffers(ride.id),
+      error: () => {},
+    });
+  }
+
+  private refreshOffers(rideId: string): void {
+    this.rideService.offers(rideId).subscribe({
+      next: (offers) => this.offers.set(offers),
+      error: () => {},
+    });
+  }
+
   applyPromo(code: string): void {
     const trimmed = code.trim();
     if (!trimmed) {
@@ -343,6 +457,7 @@ export class HomeComponent implements OnDestroy {
         dropoffLat: this.dropoff.lat, dropoffLng: this.dropoff.lng,
         vehicleType: this.selectedTier(),
         searchRadiusKm: 10,
+        proposedFare: this.proposedFare() ?? undefined,
       })
       .subscribe({
         next: (ride) => {
@@ -363,6 +478,7 @@ export class HomeComponent implements OnDestroy {
         next: (ride) => {
           const prev = this.ride()?.status;
           this.ride.set(ride);
+          if (ride.status === 'REQUESTED') this.refreshOffers(ride.id);
           if (ride.status === 'ACCEPTED' || ride.status === 'IN_PROGRESS') {
             this.stage.set('active');
             if (ride.driverId) this.trackDriver(ride.driverId);
@@ -453,6 +569,8 @@ export class HomeComponent implements OnDestroy {
     this.dropoff = null;
     this.routeCoords = null;
     this.stage.set('pickup');
+    this.offers.set([]);
+    this.proposedFare.set(null);
     this.etaMin.set(null);
     this.paid.set(false);
     this.receipt.set('');

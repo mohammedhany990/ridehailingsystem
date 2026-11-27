@@ -48,8 +48,20 @@ type DriverStage = 'setup' | 'offline' | 'online' | 'request' | 'accepted' | 'in
       <div class="sheet center request-card">
         <p class="kicker">New ride request</p>
         <h2>{{ activeRide()?.vehicleType }} ride</h2>
-        <p class="dim">Tap accept to take this trip</p>
-        <button class="cta" type="button" (click)="accept()">Accept</button>
+        @if (activeRide()?.proposedFare; as proposed) {
+          <p class="proposed">{{ 'driver.proposedFare' | t }}: <strong>{{ proposed | number: '1.0-0' }} EGP</strong></p>
+          <button class="cta" type="button" (click)="accept()">Accept {{ proposed | number: '1.0-0' }} EGP</button>
+        } @else {
+          <p class="dim">Tap accept to take this trip</p>
+          <button class="cta" type="button" (click)="accept()">Accept</button>
+        }
+        <div class="counter-row">
+          <input #offerAmount type="number" inputmode="decimal" min="1" [placeholder]="'driver.counterPlaceholder' | t" />
+          <button class="offer-btn" type="button" (click)="sendOffer(offerAmount.value)">{{ 'driver.sendOffer' | t }}</button>
+        </div>
+        @if (offerSent()) {
+          <p class="offer-sent">{{ 'driver.offerSent' | t }}</p>
+        }
       </div>
     }
 
@@ -113,6 +125,17 @@ type DriverStage = 'setup' | 'offline' | 'online' | 'request' | 'accepted' | 'in
     .fare { font-size: 32px; font-weight: 800; margin: 4px 0 14px; letter-spacing: -0.02em; }
     .earnings { color: var(--accent); font-weight: 700; margin: 12px 0 0; }
     .request-card { border-color: var(--brand); }
+    .proposed { color: var(--text-dim); font-size: 14px; margin: 0 0 10px; }
+    .proposed strong { color: var(--text); font-size: 17px; }
+    .counter-row { display: flex; gap: 8px; margin-top: 10px; }
+    .counter-row input { flex: 1; margin-bottom: 0; }
+    .offer-btn {
+      padding: 0 16px; border-radius: var(--radius-md); border: 1px solid var(--brand);
+      background: var(--brand-soft); color: var(--brand-strong); font-weight: 700; white-space: nowrap;
+      transition: transform var(--dur-fast) var(--ease-spring);
+    }
+    .offer-btn:active { transform: scale(0.95); }
+    .offer-sent { color: var(--accent); font-size: 12.5px; font-weight: 700; margin: 10px 0 0; }
   `,
 })
 export class DriverHomeComponent implements OnInit, OnDestroy {
@@ -229,6 +252,22 @@ export class DriverHomeComponent implements OnInit, OnDestroy {
     this.map.setPickup(ride.pickupLat, ride.pickupLng);
     this.map.setDropoff(ride.dropoffLat, ride.dropoffLng);
     this.map.fitAll();
+  }
+
+  readonly offerSent = signal(false);
+
+  sendOffer(value: string): void {
+    const ride = this.activeRide();
+    const driverId = this.auth.currentUserId();
+    const amount = Number(value);
+    if (!ride || !driverId || !value || !Number.isFinite(amount) || amount <= 0) return;
+    this.driverService.offerFare(ride.id, driverId, amount).subscribe({
+      next: () => {
+        this.offerSent.set(true);
+        setTimeout(() => this.offerSent.set(false), 4000);
+      },
+      error: () => {},
+    });
   }
 
   accept(): void {

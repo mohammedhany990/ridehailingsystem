@@ -31,6 +31,10 @@ export class DriverService {
     return this.api.get(`/api/rides/driver/${driverId}/history`);
   }
 
+  offerFare(rideId: string, driverId: string, amount: number): Observable<unknown> {
+    return this.api.post(`/api/rides/${rideId}/offers`, { driverId, amount });
+  }
+
   accept(rideId: string, driverId: string): Observable<Ride> {
     return this.api.put(`/api/rides/${rideId}/accept`, { driverId });
   }

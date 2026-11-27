@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
-import { FareEstimate, Receipt, Ride, RouteInfo, Trail } from './models';
+import { FareEstimate, FareOffer, Receipt, Ride, RouteInfo, Trail } from './models';
 
 export interface RideRequestBody {
   pickupLat: number;
@@ -10,6 +10,7 @@ export interface RideRequestBody {
   dropoffLng: number;
   vehicleType: string;
   searchRadiusKm?: number;
+  proposedFare?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -49,6 +50,22 @@ export class RideService {
 
   trail(rideId: string): Observable<Trail> {
     return this.api.get(`/api/rides/${rideId}/trail`);
+  }
+
+  offers(rideId: string): Observable<FareOffer[]> {
+    return this.api.get(`/api/rides/${rideId}/offers`);
+  }
+
+  acceptOffer(rideId: string, offerId: string): Observable<FareOffer> {
+    return this.api.put(`/api/rides/${rideId}/offers/${offerId}/accept`, {});
+  }
+
+  declineOffer(rideId: string, offerId: string): Observable<FareOffer> {
+    return this.api.put(`/api/rides/${rideId}/offers/${offerId}/decline`, {});
+  }
+
+  updateProposedFare(rideId: string, amount: number): Observable<unknown> {
+    return this.api.put(`/api/rides/${rideId}/proposed-fare`, { amount });
   }
 
   receipt(rideId: string): Observable<Receipt> {
