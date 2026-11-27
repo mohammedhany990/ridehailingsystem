@@ -36,3 +36,7 @@ app:
 logging:
   level:
     com.ridehailing.notificationservice: INFO
+
+app:
+  kafka:
+    payment-events-topic: payment-events

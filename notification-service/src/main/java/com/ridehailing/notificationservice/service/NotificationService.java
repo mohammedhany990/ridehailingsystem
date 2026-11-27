@@ -3,6 +3,7 @@ package com.ridehailing.notificationservice.service;
 import com.ridehailing.notificationservice.dto.NotificationResponse;
 import com.ridehailing.notificationservice.entity.Notification;
 import com.ridehailing.notificationservice.entity.NotificationType;
+import com.ridehailing.notificationservice.event.PaymentEvent;
 import com.ridehailing.notificationservice.event.RideEvent;
 import com.ridehailing.notificationservice.exception.NotificationNotFoundException;
 import com.ridehailing.notificationservice.repository.NotificationRepository;
@@ -36,6 +37,35 @@ public class NotificationService {
             created.add(build(event.driverId(), type, driverTitle(type), driverBody(type, event), event));
         }
 
+        List<Notification> saved = repository.saveAll(created);
+        saved.forEach(n -> channels.forEach(c -> c.deliver(n)));
+        return saved;
+    }
+
+    @Transactional
+    public List<Notification> handlePaymentEvent(PaymentEvent event) {
+        NotificationType type = NotificationType.valueOf(event.eventType());
+        boolean success = type == NotificationType.PAYMENT_SUCCEEDED;
+        String title = success ? "Payment successful" : "Payment failed";
+        String amountText = event.amount() != null ? event.amount() + " " + event.currency() : "";
+        String riderBodyText = success
+                ? "Your payment of " + amountText + " for this ride went through."
+                : "Your payment for this ride failed." + (event.failureReason() != null ? " Reason: " + event.failureReason() : "");
+        String driverBodyText = success
+                ? "The rider paid " + amountText + " for this ride."
+                : "The rider's payment for this ride failed.";
+
+        List<Notification> created = new ArrayList<>();
+        created.add(Notification.builder()
+                .id(UUID.randomUUID()).userId(event.riderId()).type(type)
+                .title(title).body(riderBodyText).rideId(event.rideId())
+                .read(false).createdAt(Instant.now()).build());
+        if (event.driverId() != null) {
+            created.add(Notification.builder()
+                    .id(UUID.randomUUID()).userId(event.driverId()).type(type)
+                    .title(title).body(driverBodyText).rideId(event.rideId())
+                    .read(false).createdAt(Instant.now()).build());
+        }
         List<Notification> saved = repository.saveAll(created);
         saved.forEach(n -> channels.forEach(c -> c.deliver(n)));
         return saved;

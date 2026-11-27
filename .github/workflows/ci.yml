@@ -16,6 +16,7 @@ jobs:
           - eureka-server
           - config-server
           - notification-service
+          - payment-service
           - api-gateway
           - auth-service
           - user-service
@@ -34,7 +35,7 @@ jobs:
       - name: Build ${{ matrix.service }}
         working-directory: ${{ matrix.service }}
         run: |
-          if [ "${{ matrix.service }}" = "notification-service" ]; then
+          if [ "${{ matrix.service }}" = "notification-service" ] || [ "${{ matrix.service }}" = "payment-service" ]; then
             ./mvnw -B clean verify
           else
             ./mvnw -B clean package -DskipTests
@@ -79,6 +80,7 @@ jobs:
             [rating]="http://localhost:8088/actuator/health"
             [map]="http://localhost:8089/actuator/health"
             [notification]="http://localhost:8090/actuator/health"
+            [payment]="http://localhost:8086/actuator/health"
           )
           for name in "${!checks[@]}"; do
             url="${checks[$name]}"

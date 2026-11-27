@@ -14,7 +14,8 @@ public class RideEventListener {
 
     private final NotificationService notificationService;
 
-    @KafkaListener(topics = "${app.kafka.ride-events-topic:ride-events}", groupId = "notification-service")
+    @KafkaListener(topics = "${app.kafka.ride-events-topic:ride-events}", groupId = "notification-service",
+            properties = "spring.json.value.default.type=com.ridehailing.notificationservice.event.RideEvent")
     public void onRideEvent(RideEvent event) {
         log.info("Received ride event {} for ride {}", event.eventType(), event.rideId());
         notificationService.handleRideEvent(event);

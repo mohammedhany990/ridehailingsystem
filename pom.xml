@@ -35,6 +35,7 @@
         <module>eureka-server</module>
         <module>config-server</module>
         <module>notification-service</module>
+        <module>payment-service</module>
     </modules>
 
     <dependencies>
