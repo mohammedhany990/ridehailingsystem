@@ -3,6 +3,8 @@ import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { forkJoin, Subscription, interval, switchMap } from 'rxjs';
 import { MapComponent } from '../../shared/map/map.component';
+import { DriverHomeComponent } from '../driver/driver-home.component';
+import { ProfileService } from '../../core/profile.service';
 import { RideService } from '../../core/ride.service';
 import { TPipe } from '../../shared/t.pipe';
 import { FareEstimate, Ride } from '../../core/models';
@@ -29,8 +31,11 @@ const TIERS: TierOption[] = [
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [MapComponent, TPipe, DecimalPipe],
+  imports: [MapComponent, DriverHomeComponent, TPipe, DecimalPipe],
   template: `
+    @if (isDriver()) {
+      <app-driver-home />
+    } @else {
     <app-map #map (tapped)="onTap($event)" />
 
     @if (stage() === 'pickup' || stage() === 'dropoff') {
@@ -134,6 +139,7 @@ const TIERS: TierOption[] = [
         <button type="button" class="ghost" (click)="reset()">{{ 'common.back' | t }}</button>
       </div>
     }
+      }
   `,
   styles: `
     :host { display: block; position: absolute; inset: 0; }
@@ -219,6 +225,9 @@ export class HomeComponent implements OnDestroy {
   @ViewChild('map') map!: MapComponent;
 
   private rideService = inject(RideService);
+  private profileService = inject(ProfileService);
+
+  readonly isDriver = () => this.profileService.profile()?.role === 'DRIVER';
   private api = inject(ApiService);
   private router = inject(Router);
 
