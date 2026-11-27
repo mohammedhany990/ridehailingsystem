@@ -39,7 +39,9 @@ tmp/
 temp/
 
 postgres/*
+!postgres/init/
 mongodb/*
+!mongodb/init/
 .env
 .env.*
 !.env.example

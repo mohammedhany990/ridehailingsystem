@@ -71,8 +71,8 @@ The platform uses a hybrid storage layer customized for performance constraints:
 
 ### Automated Initialization & Seeding
 All database schemas are automatically initialized, schemas built, and sample data seeded upon running the containerized PostgreSQL and MongoDB servers via:
-* `./postgres/init/` SQL scripts (`00-init-databases.sql` to `06-rating.sql`)
-* `./mongodb/init/01-seed.js` JavaScript script (creates indexes like `2dsphere` on `driver_locations`)
+* `./postgres/init/00-create-databases.sql` creates the five databases (`auth_db`, `user_db`, `ride_db`, `pricing_db`, `rating_db`); each service then builds its own schema via JPA.
+* `./mongodb/init/01-seed.js` creates the `location_db.driver_locations` collection with its `2dsphere` geo index.
 
 ---
 
@@ -95,7 +95,7 @@ MONGO_PASSWORD=mongo
 SPRING_DATA_REDIS_PASSWORD=redis123
 
 # Security
-JWT_SECRET=d4ry5l1PuM3RZtQU9HVIVjnNb3r+Zfn26DRIZPybM9eDZtrlXgz3kTxl3rc6UEEZFsiz+Lv9x9dVO2ykCBybag==
+JWT_SECRET=generate_a_long_random_base64_secret
 
 # Optional Integrations
 SPRING_MAIL_HOST=smtp.gmail.com

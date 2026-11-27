@@ -18,7 +18,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 jwt:
-  secret: ${JWT_SECRET:d4ry5l1PuM3RZtQU9HVIVjnNb3r+Zfn26DRIZPybM9eDZtrlXgz3kTxl3rc6UEEZFsiz+Lv9x9dVO2ykCBybag==}
+  secret: ${JWT_SECRET}
 eureka:
   client:
     service-url:
