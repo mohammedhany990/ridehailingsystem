@@ -2,6 +2,7 @@ package com.ridehailing.paymentservice.controller;
 
 import com.ridehailing.paymentservice.common.ApiResponse;
 import com.ridehailing.paymentservice.dto.PaymentResponse;
+import com.ridehailing.paymentservice.dto.ReceiptResponse;
 import com.ridehailing.paymentservice.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,6 +46,16 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success(
                 "Driver payments retrieved",
                 paymentService.historyForDriver(userId, PageRequest.of(page, size))));
+    }
+
+    @GetMapping("/ride/{rideId}/receipt")
+    public ResponseEntity<ApiResponse<ReceiptResponse>> rideReceipt(
+            @PathVariable UUID rideId,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getClaim("userId"));
+        return ResponseEntity.ok(ApiResponse.success(
+                "Receipt retrieved",
+                paymentService.receiptForRide(rideId, userId)));
     }
 
     @GetMapping("/{id}")

@@ -30,7 +30,7 @@ public class FareCalculationService {
                 .rideId(ride.getId())
                 .distanceKm(distanceKm)
                 .durationMinutes(durationMinutes)
-                .vehicleType("STANDARD")
+                .vehicleType(ride.getVehicleType() != null ? ride.getVehicleType() : "STANDARD")
                 .build();
 
         UserApiResponse<PricingCalculationResponse> response =

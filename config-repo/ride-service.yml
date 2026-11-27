@@ -90,3 +90,6 @@ resilience4j:
 app:
   kafka:
     ride-events-topic: ride-events
+
+ride:
+  cancellation-fee: 10.00

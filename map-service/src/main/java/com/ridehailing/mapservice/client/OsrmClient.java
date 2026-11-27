@@ -29,7 +29,7 @@ public class OsrmClient {
                         + pickupLng + "," + pickupLat +
                         ";" +
                         dropoffLng + "," + dropoffLat +
-                        "?overview=false";
+                        "?overview=full&geometries=geojson";
 
         return restClient.get()
                 .uri(url)

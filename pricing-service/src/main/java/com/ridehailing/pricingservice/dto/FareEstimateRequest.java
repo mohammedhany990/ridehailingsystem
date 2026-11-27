@@ -26,4 +26,6 @@ public class FareEstimateRequest {
     private Double durationMin;  // pre-computed duration from map-service (optional)
 
     private String vehicleType = "STANDARD";
+
+    private String promoCode;
 }

@@ -21,5 +21,13 @@ public class OsrmResponse {
         private double distance;
 
         private double duration;
+
+        private Geometry geometry;
+    }
+
+    @Data
+    public static class Geometry {
+
+        private List<List<Double>> coordinates;
     }
 }

@@ -38,6 +38,9 @@ public class Ride {
     private RideStatus status = RideStatus.REQUESTED;
 
     @Column(nullable = false)
+    private String vehicleType = "STANDARD";
+
+    @Column(nullable = false)
     private Double pickupLat;
 
     @Column(nullable = false)

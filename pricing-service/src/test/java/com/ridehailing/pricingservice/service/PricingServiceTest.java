@@ -2,9 +2,12 @@ package com.ridehailing.pricingservice.service;
 
 import com.ridehailing.pricingservice.dto.FareEstimateRequest;
 import com.ridehailing.pricingservice.dto.FareEstimateResponse;
+import com.ridehailing.pricingservice.entity.DiscountType;
 import com.ridehailing.pricingservice.entity.FareRule;
+import com.ridehailing.pricingservice.entity.PromoCode;
 import com.ridehailing.pricingservice.repository.FareCalculationRepository;
 import com.ridehailing.pricingservice.repository.FareRuleRepository;
+import com.ridehailing.pricingservice.repository.PromoCodeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,13 +33,16 @@ class PricingServiceTest {
     @Mock
     private SurgeService surgeService;
 
+    @Mock
+    private PromoCodeRepository promoCodeRepository;
+
     private PricingService pricingService;
 
     private FareRule standardRule;
 
     @BeforeEach
     void setUp() {
-        pricingService = new PricingService(fareRuleRepository, fareCalculationRepository, surgeService);
+        pricingService = new PricingService(fareRuleRepository, fareCalculationRepository, surgeService, promoCodeRepository);
         standardRule = FareRule.builder()
                 .vehicleType("STANDARD")
                 .baseFare(new BigDecimal("10.00"))
@@ -89,6 +95,28 @@ class PricingServiceTest {
         FareEstimateResponse r = pricingService.estimate(request(0.1, 0.5));
 
         assertThat(r.getEstimatedMinFare()).isGreaterThanOrEqualTo(new BigDecimal("12.75"));
+    }
+
+    @Test
+    void percentPromoDiscountsTheEstimate() {
+        when(fareRuleRepository.findByVehicleTypeAndActiveTrue("STANDARD")).thenReturn(Optional.of(standardRule));
+        when(surgeService.getSurgeMultiplier(anyDouble(), anyDouble())).thenReturn(BigDecimal.ONE);
+        when(promoCodeRepository.findByCodeIgnoreCaseAndActiveTrue("RIDE20"))
+                .thenReturn(Optional.of(PromoCode.builder()
+                        .code("RIDE20")
+                        .discountType(DiscountType.PERCENT)
+                        .value(new BigDecimal("20"))
+                        .active(true)
+                        .build()));
+
+        FareEstimateRequest r = request(10.0, 20.0);
+        r.setPromoCode("RIDE20");
+
+        FareEstimateResponse res = pricingService.estimate(r);
+
+        assertThat(res.getDiscountAmount()).isEqualByComparingTo("16.00");
+        assertThat(res.getPromoCode()).isEqualTo("RIDE20");
+        assertThat(res.getEstimatedMaxFare()).isEqualByComparingTo("73.60");
     }
 
     @Test

@@ -1,10 +1,13 @@
 package com.ridehailing.pricingservice.service;
 
 import com.ridehailing.pricingservice.dto.*;
+import com.ridehailing.pricingservice.entity.DiscountType;
 import com.ridehailing.pricingservice.entity.FareCalculation;
 import com.ridehailing.pricingservice.entity.FareRule;
+import com.ridehailing.pricingservice.entity.PromoCode;
 import com.ridehailing.pricingservice.repository.FareCalculationRepository;
 import com.ridehailing.pricingservice.repository.FareRuleRepository;
+import com.ridehailing.pricingservice.repository.PromoCodeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.UUID;
 
 @Slf4j
@@ -23,6 +27,7 @@ public class PricingService {
     private final FareRuleRepository fareRuleRepository;
     private final FareCalculationRepository fareCalculationRepository;
     private final SurgeService surgeService;
+    private final PromoCodeRepository promoCodeRepository;
 
 
     public FareEstimateResponse estimate(FareEstimateRequest request) {
@@ -45,10 +50,14 @@ public class PricingService {
         BigDecimal rawTotal = base.add(distCost).add(timeCost).multiply(surge);
         BigDecimal total    = rawTotal.max(rule.getMinimumFare()).setScale(2, RoundingMode.HALF_UP);
 
+        PromoCode promo = resolvePromo(request.getPromoCode());
+        BigDecimal discount = discountFor(promo, total);
+        BigDecimal chargedTotal = total.subtract(discount).setScale(2, RoundingMode.HALF_UP);
+
         // ±15 % buffer for estimate range
         BigDecimal factor   = new BigDecimal("0.15");
-        BigDecimal minFare  = total.multiply(BigDecimal.ONE.subtract(factor)).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal maxFare  = total.multiply(BigDecimal.ONE.add(factor)).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal minFare  = chargedTotal.multiply(BigDecimal.ONE.subtract(factor)).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal maxFare  = chargedTotal.multiply(BigDecimal.ONE.add(factor)).setScale(2, RoundingMode.HALF_UP);
 
         return FareEstimateResponse.builder()
                 .estimatedMinFare(minFare)
@@ -58,7 +67,46 @@ public class PricingService {
                 .vehicleType(request.getVehicleType())
                 .distanceKm(distKm)
                 .durationMinutes(durMin)
+                .promoCode(promo != null ? promo.getCode() : null)
+                .discountAmount(discount)
                 .build();
+    }
+
+    public PromoValidationResponse validatePromo(String code) {
+        PromoCode promo = resolvePromo(code);
+        if (promo == null) {
+            return PromoValidationResponse.builder()
+                    .code(code)
+                    .valid(false)
+                    .message("Invalid or expired promo code")
+                    .build();
+        }
+        return PromoValidationResponse.builder()
+                .code(promo.getCode())
+                .valid(true)
+                .discountType(promo.getDiscountType())
+                .discountValue(promo.getValue())
+                .message("Promo code applied")
+                .build();
+    }
+
+    private PromoCode resolvePromo(String code) {
+        if (code == null || code.isBlank()) {
+            return null;
+        }
+        return promoCodeRepository.findByCodeIgnoreCaseAndActiveTrue(code.trim())
+                .filter(p -> p.getValidUntil() == null || p.getValidUntil().isAfter(Instant.now()))
+                .orElse(null);
+    }
+
+    private BigDecimal discountFor(PromoCode promo, BigDecimal total) {
+        if (promo == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+        BigDecimal discount = promo.getDiscountType() == DiscountType.PERCENT
+                ? total.multiply(promo.getValue()).movePointLeft(2)
+                : promo.getValue();
+        return discount.min(total).setScale(2, RoundingMode.HALF_UP);
     }
 
     public FareCalculationResponse calculate(FareCalculationRequest request) {

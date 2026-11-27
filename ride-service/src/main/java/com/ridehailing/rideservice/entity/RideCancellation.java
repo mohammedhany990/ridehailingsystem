@@ -3,7 +3,7 @@ package com.ridehailing.rideservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.Instant;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -31,4 +31,6 @@ public class RideCancellation {
 
     @Column(nullable = false)
     private Instant cancelledAt;
+
+    private BigDecimal cancellationFee;
 }

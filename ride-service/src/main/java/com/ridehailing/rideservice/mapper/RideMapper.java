@@ -17,6 +17,7 @@ public class RideMapper {
                 .riderId(ride.getRiderId())
                 .driverId(ride.getDriverId())
                 .status(ride.getStatus())
+                .vehicleType(ride.getVehicleType())
                 .pickupLat(ride.getPickupLat())
                 .pickupLng(ride.getPickupLng())
                 .dropoffLat(ride.getDropoffLat())
@@ -50,6 +51,7 @@ public class RideMapper {
                 .cancelledBy(cancellation.getCancelledBy())
                 .reason(cancellation.getReason())
                 .cancelledAt(cancellation.getCancelledAt())
+                .cancellationFee(cancellation.getCancellationFee())
                 .build();
     }
 }

@@ -1,6 +1,7 @@
 package com.ridehailing.paymentservice.service;
 
 import com.ridehailing.paymentservice.dto.PaymentResponse;
+import com.ridehailing.paymentservice.dto.ReceiptResponse;
 import com.ridehailing.paymentservice.entity.Payment;
 import com.ridehailing.paymentservice.entity.PaymentStatus;
 import com.ridehailing.paymentservice.event.PaymentEvent;
@@ -120,6 +121,15 @@ public class PaymentService {
 
     public PaymentResponse getOwned(UUID paymentId, UUID userId) {
         return PaymentResponse.from(findOwned(paymentId, userId));
+    }
+
+    public ReceiptResponse receiptForRide(UUID rideId, UUID userId) {
+        Payment payment = repository.findByRideId(rideId)
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found for ride: " + rideId));
+        if (!payment.getRiderId().equals(userId) && !userId.equals(payment.getDriverId())) {
+            throw new PaymentNotFoundException("Payment not found for ride: " + rideId);
+        }
+        return ReceiptResponse.from(payment);
     }
 
     private Payment findOwned(UUID paymentId, UUID userId) {

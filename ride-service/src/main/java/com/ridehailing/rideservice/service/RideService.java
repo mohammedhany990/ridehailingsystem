@@ -14,7 +14,10 @@ import com.ridehailing.rideservice.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,6 +34,9 @@ public class RideService {
     private final FareCalculationService fareCalculationService;
     private final RideMapper rideMapper;
     private final RideEventPublisher rideEventPublisher;
+
+    @Value("${ride.cancellation-fee:10.00}")
+    private BigDecimal cancellationFee;
 
     public ApiResponse<RideResponse> requestRide(UUID riderId, RideRequest request, String bearerToken) {
 
@@ -49,6 +55,7 @@ public class RideService {
                 .dropoffLat(request.getDropoffLat())
                 .dropoffLng(request.getDropoffLng())
                 .status(RideStatus.REQUESTED)
+                .vehicleType(request.getVehicleType() != null ? request.getVehicleType() : "STANDARD")
                 .requestedAt(Instant.now())
                 .build();
 
@@ -144,6 +151,10 @@ public class RideService {
         Ride ride = findRide(rideId);
 
         ride.cancel(request.getCancelledBy(), request.getReason());
+
+        if (ride.getAcceptedAt() != null && ride.getCancellation() != null) {
+            ride.getCancellation().setCancellationFee(cancellationFee);
+        }
 
         Ride saved = rideRepository.save(ride);
 

@@ -34,6 +34,9 @@ public class RideRequest {
     @DecimalMax(value = "180.0",  message = "Invalid dropoff longitude")
     private Double dropoffLng;
 
+    @Builder.Default
+    private String vehicleType = "STANDARD";
+
     @Positive(message = "Search radius must be positive")
     @DecimalMax(value = "50.0",   message = "Search radius cannot exceed 50 km")
     @Builder.Default

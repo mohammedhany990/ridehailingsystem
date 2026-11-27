@@ -30,6 +30,7 @@ public class MapService {
         return RouteInfo.builder()
                 .distanceKm(route.getDistance() / 1000.0)
                 .durationMinutes(route.getDuration() / 60.0)
+                .geometry(route.getGeometry() != null ? route.getGeometry().getCoordinates() : null)
                 .build();
     }
 }

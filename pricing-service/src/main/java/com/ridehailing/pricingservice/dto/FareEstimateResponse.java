@@ -15,4 +15,6 @@ public class FareEstimateResponse {
     private String vehicleType;
     private Double distanceKm;
     private Double durationMinutes;
+    private String promoCode;
+    private java.math.BigDecimal discountAmount;
 }

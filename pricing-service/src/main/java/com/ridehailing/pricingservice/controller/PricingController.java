@@ -35,6 +35,13 @@ public class PricingController {
         return ResponseEntity.ok(ApiResponse.success("Fare calculated", response));
     }
 
+    @PostMapping("/promo/validate")
+    @Operation(summary = "Validate a promo code")
+    public ResponseEntity<ApiResponse<PromoValidationResponse>> validatePromo(
+            @Valid @RequestBody PromoValidationRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Promo validation", pricingService.validatePromo(request.getCode())));
+    }
+
     @GetMapping("/ride/{rideId}")
     @Operation(summary = "Get calculated fare by ride ID")
     public ResponseEntity<ApiResponse<FareCalculationResponse>> getByRideId(
