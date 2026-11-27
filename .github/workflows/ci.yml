@@ -40,6 +40,13 @@ jobs:
           else
             ./mvnw -B clean package -DskipTests
           fi
+      - name: Upload coverage report
+        if: matrix.service == 'notification-service' || matrix.service == 'payment-service'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/site/jacoco/
+          retention-days: 14
 
   compose-smoke:
     runs-on: ubuntu-latest
