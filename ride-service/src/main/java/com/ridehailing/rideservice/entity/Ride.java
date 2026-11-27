@@ -56,6 +56,12 @@ public class Ride {
     @Builder.Default
     private Instant requestedAt = Instant.now();
 
+    @Column(precision = 10, scale = 2)
+    private java.math.BigDecimal proposedFare;
+
+    @Column(precision = 10, scale = 2)
+    private java.math.BigDecimal negotiatedAmount;
+
     private Instant acceptedAt;
     private Instant startedAt;
     private Instant completedAt;

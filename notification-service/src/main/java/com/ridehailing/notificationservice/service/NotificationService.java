@@ -116,6 +116,10 @@ public class NotificationService {
             case RIDE_STARTED -> "Your ride has started";
             case RIDE_COMPLETED -> "Ride completed";
             case RIDE_CANCELLED -> "Ride cancelled";
+            case FARE_OFFERED -> "New fare offer";
+            case FARE_OFFER_ACCEPTED -> "Fare agreed";
+            case FARE_OFFER_DECLINED -> "Offer declined";
+            case FARE_COUNTERED -> "Fare updated";
             default -> "Ride update";
         };
     }
@@ -127,6 +131,10 @@ public class NotificationService {
             case RIDE_STARTED -> "Your ride is in progress. Enjoy the trip.";
             case RIDE_COMPLETED -> "Your ride is complete. Your fare has been calculated.";
             case RIDE_CANCELLED -> "Your ride was cancelled." + (event.reason() != null ? " Reason: " + event.reason() : "");
+            case FARE_OFFERED -> "Your driver offers a fare of " + (event.reason() != null ? event.reason() : "") + " EGP. Accept or decline it.";
+            case FARE_OFFER_ACCEPTED -> "You agreed on a fare of " + (event.reason() != null ? event.reason() : "") + " EGP.";
+            case FARE_OFFER_DECLINED -> "You declined the driver's fare offer.";
+            case FARE_COUNTERED -> "You updated your proposed fare to " + (event.reason() != null ? event.reason() : "") + " EGP.";
             default -> "Your ride status changed to " + type;
         };
     }
@@ -138,6 +146,10 @@ public class NotificationService {
             case RIDE_STARTED -> "Ride in progress";
             case RIDE_COMPLETED -> "Ride completed";
             case RIDE_CANCELLED -> "Ride cancelled";
+            case FARE_OFFERED -> "Fare offer sent";
+            case FARE_OFFER_ACCEPTED -> "Your offer was accepted";
+            case FARE_OFFER_DECLINED -> "Your offer was declined";
+            case FARE_COUNTERED -> "Rider countered";
             default -> "Ride update";
         };
     }
@@ -149,6 +161,10 @@ public class NotificationService {
             case RIDE_STARTED -> "You started this ride.";
             case RIDE_COMPLETED -> "You completed this ride. The fare is available in your history.";
             case RIDE_CANCELLED -> "This ride was cancelled." + (event.reason() != null ? " Reason: " + event.reason() : "");
+            case FARE_OFFERED -> "You offered a fare of " + (event.reason() != null ? event.reason() : "") + " EGP for this ride.";
+            case FARE_OFFER_ACCEPTED -> "The rider accepted your fare of " + (event.reason() != null ? event.reason() : "") + " EGP. Head to pickup.";
+            case FARE_OFFER_DECLINED -> "The rider declined your fare offer.";
+            case FARE_COUNTERED -> "The rider now proposes " + (event.reason() != null ? event.reason() : "") + " EGP. Accept or make a new offer.";
             default -> "Ride status changed to " + type;
         };
     }

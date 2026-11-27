@@ -37,6 +37,9 @@ public class RideRequest {
     @Builder.Default
     private String vehicleType = "STANDARD";
 
+    @Positive(message = "Proposed fare must be positive")
+    private java.math.BigDecimal proposedFare;
+
     @Positive(message = "Search radius must be positive")
     @DecimalMax(value = "50.0",   message = "Search radius cannot exceed 50 km")
     @Builder.Default

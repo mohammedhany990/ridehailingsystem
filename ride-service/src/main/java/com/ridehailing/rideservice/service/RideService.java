@@ -56,6 +56,7 @@ public class RideService {
                 .dropoffLng(request.getDropoffLng())
                 .status(RideStatus.REQUESTED)
                 .vehicleType(request.getVehicleType() != null ? request.getVehicleType() : "STANDARD")
+                .proposedFare(request.getProposedFare())
                 .requestedAt(Instant.now())
                 .build();
 
@@ -125,11 +126,24 @@ public class RideService {
                         ride.getDropoffLng()
                 )
         );
-        Fare fare = fareCalculationService.calculate(
-                ride,
-                route.getRoute().getDistanceKm(),
-                route.getRoute().getDurationMinutes()
-        );
+        Fare fare;
+        if (ride.getNegotiatedAmount() != null) {
+            fare = com.ridehailing.rideservice.entity.Fare.builder()
+                    .ride(ride)
+                    .baseFare(ride.getNegotiatedAmount())
+                    .distanceKm(java.math.BigDecimal.valueOf(route.getRoute().getDistanceKm()))
+                    .surgeMultiplier(java.math.BigDecimal.ONE)
+                    .totalAmount(ride.getNegotiatedAmount())
+                    .currency("EGP")
+                    .calculatedAt(Instant.now())
+                    .build();
+        } else {
+            fare = fareCalculationService.calculate(
+                    ride,
+                    route.getRoute().getDistanceKm(),
+                    route.getRoute().getDurationMinutes()
+            );
+        }
 
         ride.setFare(fare);
 

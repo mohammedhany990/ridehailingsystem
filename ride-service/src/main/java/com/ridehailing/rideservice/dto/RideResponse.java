@@ -17,6 +17,10 @@ public class RideResponse {
     private UUID                 driverId;
     private RideStatus           status;
     private String vehicleType;
+
+    private java.math.BigDecimal proposedFare;
+
+    private java.math.BigDecimal negotiatedAmount;
     private Double               pickupLat;
     private Double               pickupLng;
     private Double               dropoffLat;

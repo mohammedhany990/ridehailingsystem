@@ -18,6 +18,8 @@ public class RideMapper {
                 .driverId(ride.getDriverId())
                 .status(ride.getStatus())
                 .vehicleType(ride.getVehicleType())
+                .proposedFare(ride.getProposedFare())
+                .negotiatedAmount(ride.getNegotiatedAmount())
                 .pickupLat(ride.getPickupLat())
                 .pickupLng(ride.getPickupLng())
                 .dropoffLat(ride.getDropoffLat())
