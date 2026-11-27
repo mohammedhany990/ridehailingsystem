@@ -5,6 +5,7 @@ import com.ridehailing.locationservice.entity.DriverLocation;
 import com.ridehailing.locationservice.repository.DriverLocationRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ public class StaleDriverScheduler {
     private final UserServiceClient userServiceClient;
 
     @Scheduled(fixedDelay = 60_000)
+    @SchedulerLock(name = "staleDriverOffline", lockAtLeastFor = "PT10S", lockAtMostFor = "PT3M")
     @CircuitBreaker(name = "user", fallbackMethod = "fallback")
     public void markStaleDriversOffline() {
 

@@ -86,6 +86,18 @@ EST=$(curl -fsS -X POST "$GW/api/pricing/estimate" -H "Authorization: Bearer $RI
   | jq -r '.data.estimatedMinFare')
 [ -n "$EST" ] && [ "$EST" != "null" ] || fail "fare estimate"
 
+say "tier estimates differ across vehicle types"
+TIER_MINS=$(for VT in MOTO STANDARD COMFORT XL PREMIUM; do
+  curl -fsS -X POST "$GW/api/pricing/estimate" -H "Authorization: Bearer $RIDER_TOKEN" -H 'Content-Type: application/json' \
+    -d "{\"pickupLat\":30.0444,\"pickupLng\":31.2357,\"dropoffLat\":30.0626,\"dropoffLng\":31.2497,\"vehicleType\":\"$VT\"}" \
+    | jq -r '.data.estimatedMinFare'
+done)
+DISTINCT=$(echo "$TIER_MINS" | sort -u | wc -l | tr -d ' ')
+[ "$DISTINCT" -ge 4 ] || fail "tier estimates not distinct (got $DISTINCT distinct of 5): $(echo $TIER_MINS | tr '\n' ' ')"
+MOTO_MIN=$(echo "$TIER_MINS" | sed -n 1p)
+PREMIUM_MIN=$(echo "$TIER_MINS" | sed -n 5p)
+awk "BEGIN{exit !($PREMIUM_MIN > $MOTO_MIN)}" || fail "PREMIUM min ($PREMIUM_MIN) should exceed MOTO min ($MOTO_MIN)"
+
 say "rider requests ride (COMFORT tier)"
 RIDE_ID=$(curl -fsS -X POST "$GW/api/rides/request" -H "Authorization: Bearer $RIDER_TOKEN" -H 'Content-Type: application/json' \
   -d '{"pickupLat":30.0444,"pickupLng":31.2357,"dropoffLat":30.0626,"dropoffLng":31.2497,"searchRadiusKm":10,"vehicleType":"COMFORT"}' \

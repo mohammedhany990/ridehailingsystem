@@ -25,6 +25,16 @@ import java.util.UUID;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final com.ridehailing.paymentservice.repository.DriverEarningsDailyRepository earningsDailyRepository;
+
+    @GetMapping("/earnings/me/daily")
+    public ResponseEntity<ApiResponse<java.util.List<com.ridehailing.paymentservice.entity.DriverEarningsDaily>>> myDailyEarnings(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        UUID driverId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(ApiResponse.success("Daily earnings fetched",
+                earningsDailyRepository.findByDriverIdOrderByEarningDateDesc(driverId)));
+    }
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<Page<PaymentResponse>>> myPayments(

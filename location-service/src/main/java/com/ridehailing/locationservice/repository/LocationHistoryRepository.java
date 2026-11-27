@@ -9,4 +9,6 @@ import java.util.List;
 public interface LocationHistoryRepository extends MongoRepository<LocationHistory, String> {
 
     List<LocationHistory> findTop50ByDriverIdOrderByCreatedAtDesc(String driverId);
+
+    long deleteByCreatedAtBefore(Instant cutoff);
 }

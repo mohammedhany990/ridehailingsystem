@@ -10,7 +10,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import java.time.Instant;
+
 public interface RideRepository extends JpaRepository<Ride, UUID> {
+
+    List<Ride> findByStatusAndRequestedAtBefore(RideStatus status, Instant cutoff);
 
     List<Ride> findByRiderIdOrderByRequestedAtDesc(UUID riderId);
 
