@@ -71,6 +71,28 @@ spring:
                 redis-rate-limiter.replenishRate: 20
                 redis-rate-limiter.burstCapacity: 40
 
+        - id: notification-service
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+
+        - id: location-ws
+          uri: lb:ws://LOCATION-SERVICE
+          predicates:
+            - Path=/ws/location/**
+
+        - id: notification-ws
+          uri: lb:ws://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/ws/notifications/**
+
         - id: location-service
           uri: lb://LOCATION-SERVICE
           predicates:

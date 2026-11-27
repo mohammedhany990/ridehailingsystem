@@ -3,3 +3,4 @@ CREATE DATABASE user_db;
 CREATE DATABASE ride_db;
 CREATE DATABASE pricing_db;
 CREATE DATABASE rating_db;
+CREATE DATABASE notification_db;

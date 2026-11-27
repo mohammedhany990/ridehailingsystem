@@ -6,6 +6,8 @@ import com.ridehailing.rideservice.client.dto.RouteResponse;
 import com.ridehailing.rideservice.common.ApiResponse;
 import com.ridehailing.rideservice.dto.*;
 import com.ridehailing.rideservice.entity.*;
+import com.ridehailing.rideservice.event.RideEvent;
+import com.ridehailing.rideservice.kafka.RideEventPublisher;
 import com.ridehailing.rideservice.exception.*;
 import com.ridehailing.rideservice.mapper.RideMapper;
 import com.ridehailing.rideservice.repository.*;
@@ -28,6 +30,7 @@ public class RideService {
     private final RideMatchingService rideMatchingService;
     private final FareCalculationService fareCalculationService;
     private final RideMapper rideMapper;
+    private final RideEventPublisher rideEventPublisher;
 
     public ApiResponse<RideResponse> requestRide(UUID riderId, RideRequest request, String bearerToken) {
 
@@ -51,6 +54,8 @@ public class RideService {
 
         Ride saved = rideRepository.save(ride);
 
+        rideEventPublisher.publish(RideEvent.of(
+                "RIDE_REQUESTED", saved.getId(), saved.getRiderId(), saved.getDriverId(), null));
 
         return ApiResponse.success("Ride requested", rideMapper.toResponse(saved));
     }
@@ -73,6 +78,9 @@ public class RideService {
         Ride saved = rideRepository.save(ride);
 
 
+        rideEventPublisher.publish(RideEvent.of(
+                "RIDE_ACCEPTED", saved.getId(), saved.getRiderId(), saved.getDriverId(), null));
+
         return ApiResponse.success("Ride accepted", rideMapper.toResponse(saved));
     }
 
@@ -89,6 +97,9 @@ public class RideService {
                 bearerToken,
                 ride.getDriverId()
         );
+
+        rideEventPublisher.publish(RideEvent.of(
+                "RIDE_STARTED", saved.getId(), saved.getRiderId(), saved.getDriverId(), null));
 
         return ApiResponse.success("Ride started", rideMapper.toResponse(saved));
     }
@@ -121,6 +132,9 @@ public class RideService {
                 bearerToken,
                 ride.getDriverId()
         );
+        rideEventPublisher.publish(RideEvent.of(
+                "RIDE_COMPLETED", saved.getId(), saved.getRiderId(), saved.getDriverId(), null));
+
         return ApiResponse.success("Ride completed", rideMapper.toResponse(saved));
     }
 
@@ -132,6 +146,9 @@ public class RideService {
         ride.cancel(request.getCancelledBy(), request.getReason());
 
         Ride saved = rideRepository.save(ride);
+
+        rideEventPublisher.publish(RideEvent.of(
+                "RIDE_CANCELLED", saved.getId(), saved.getRiderId(), saved.getDriverId(), request.getReason()));
 
         return ApiResponse.success("Ride cancelled", rideMapper.toResponse(saved));
     }
