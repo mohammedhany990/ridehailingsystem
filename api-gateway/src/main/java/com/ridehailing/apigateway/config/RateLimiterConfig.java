@@ -3,6 +3,7 @@ package com.ridehailing.apigateway.config;
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import reactor.core.publisher.Mono;
@@ -45,6 +46,7 @@ public class RateLimiterConfig {
      * Rate limit based on the authenticated user.
      * Suitable for protected APIs.
      */
+    @Primary
     @Bean
     public KeyResolver userKeyResolver() {
         return exchange ->
