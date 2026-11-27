@@ -31,6 +31,12 @@ import { ProfileService } from '../../core/profile.service';
       <main class="content">
         <router-outlet />
       </main>
+      @if (notifications.toast(); as toast) {
+        <div class="toast" role="status">
+          <strong>{{ toast.title }}</strong>
+          <span>{{ toast.body }}</span>
+        </div>
+      }
       <nav class="bottom-nav" [attr.aria-label]="'main'">
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5V21H3Z"/></svg>
@@ -72,6 +78,14 @@ import { ProfileService } from '../../core/profile.service';
     .icon-btn:hover { transform: translateY(-1px); }
     .icon-btn:active { transform: scale(0.94); }
     .content { flex: 1; min-height: 0; position: relative; }
+    .toast {
+      position: absolute; top: calc(env(safe-area-inset-top, 0px) + 76px); inset-inline: 16px; z-index: 600;
+      background: var(--bg-elev); border: 1px solid var(--brand); border-radius: var(--radius-md);
+      padding: 13px 16px; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; gap: 2px;
+      animation: pop var(--dur-med) var(--ease-out);
+    }
+    .toast strong { font-size: 14px; }
+    .toast span { font-size: 12.5px; color: var(--text-dim); }
     .bottom-nav {
       position: absolute; bottom: 0; left: 0; right: 0; z-index: 500;
       display: flex; justify-content: space-around;
@@ -93,11 +107,13 @@ import { ProfileService } from '../../core/profile.service';
 export class ShellComponent implements OnInit {
   readonly theme = inject(ThemeService);
   readonly i18n = inject(I18nService);
-  private notifications = inject(NotificationService);
+  readonly notifications = inject(NotificationService);
   private profile = inject(ProfileService);
 
   ngOnInit(): void {
     this.notifications.refreshUnread().subscribe({ error: () => {} });
+    this.notifications.load().subscribe({ error: () => {} });
+    this.notifications.connect();
     this.profile.load().subscribe({ error: () => {} });
   }
 }
