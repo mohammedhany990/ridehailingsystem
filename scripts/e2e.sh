@@ -53,9 +53,20 @@ curl -fsS -X POST "$GW/api/location/update" -H "Authorization: Bearer $DRIVER_TO
   -d "{\"driverId\":\"$DRIVER_ID\",\"latitude\":30.0444,\"longitude\":31.2357}" > /dev/null || fail "location update"
 sleep 2
 
-say "rider requests ride"
+say "promo code validates"
+PROMO_VALID=$(curl -fsS -X POST "$GW/api/pricing/promo/validate" -H "Authorization: Bearer $RIDER_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"code":"RIDE20"}' | jq -r '.data.valid')
+[ "$PROMO_VALID" = "true" ] || fail "promo RIDE20 not valid"
+
+say "fare estimate with vehicle type + promo"
+EST=$(curl -fsS -X POST "$GW/api/pricing/estimate" -H "Authorization: Bearer $RIDER_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"pickupLat":30.0444,"pickupLng":31.2357,"dropoffLat":30.0626,"dropoffLng":31.2497,"vehicleType":"COMFORT","promoCode":"RIDE20"}' \
+  | jq -r '.data.estimatedMinFare')
+[ -n "$EST" ] && [ "$EST" != "null" ] || fail "fare estimate"
+
+say "rider requests ride (COMFORT tier)"
 RIDE_ID=$(curl -fsS -X POST "$GW/api/rides/request" -H "Authorization: Bearer $RIDER_TOKEN" -H 'Content-Type: application/json' \
-  -d '{"pickupLat":30.0444,"pickupLng":31.2357,"dropoffLat":30.0626,"dropoffLng":31.2497,"searchRadiusKm":10}' \
+  -d '{"pickupLat":30.0444,"pickupLng":31.2357,"dropoffLat":30.0626,"dropoffLng":31.2497,"searchRadiusKm":10,"vehicleType":"COMFORT"}' \
   | jq -r '.data.id')
 [ -n "$RIDE_ID" ] && [ "$RIDE_ID" != "null" ] || fail "ride request"
 
@@ -63,8 +74,18 @@ say "driver accepts"
 curl -fsS -X PUT "$GW/api/rides/$RIDE_ID/accept" -H "Authorization: Bearer $DRIVER_TOKEN" -H 'Content-Type: application/json' \
   -d "{\"driverId\":\"$DRIVER_ID\"}" > /dev/null || fail "accept"
 
-say "start + complete"
+say "start + breadcrumbs + complete"
 curl -fsS -X PUT "$GW/api/rides/$RIDE_ID/start" -H "Authorization: Bearer $DRIVER_TOKEN" > /dev/null || fail "start"
+
+curl -fsS -X POST "$GW/api/rides/$RIDE_ID/breadcrumbs" -H "Authorization: Bearer $DRIVER_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"lat":30.0450,"lng":31.2360}' > /dev/null || fail "breadcrumb 1"
+sleep 1
+curl -fsS -X POST "$GW/api/rides/$RIDE_ID/breadcrumbs" -H "Authorization: Bearer $DRIVER_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"lat":30.0500,"lng":31.2400}' > /dev/null || fail "breadcrumb 2"
+
+TRAIL_COUNT=$(curl -fsS "$GW/api/rides/$RIDE_ID/trail" -H "Authorization: Bearer $RIDER_TOKEN" | jq -r '.data.pointCount')
+[ "$TRAIL_COUNT" = "2" ] || fail "trail has $TRAIL_COUNT points, expected 2"
+
 curl -fsS -X PUT "$GW/api/rides/$RIDE_ID/complete" -H "Authorization: Bearer $DRIVER_TOKEN" > /dev/null || fail "complete"
 
 say "payment created from Kafka event"
@@ -81,6 +102,10 @@ say "charge + confirm (simulated)"
 curl -fsS -X POST "$GW/api/payments/$PAYMENT_ID/charge" -H "Authorization: Bearer $RIDER_TOKEN" > /dev/null || fail "charge"
 curl -fsS -X POST "$GW/api/payments/$PAYMENT_ID/confirm-simulated" -H "Authorization: Bearer $RIDER_TOKEN" > /dev/null || fail "confirm"
 
+say "trip receipt"
+RECEIPT=$(curl -fsS "$GW/api/payments/ride/$RIDE_ID/receipt" -H "Authorization: Bearer $RIDER_TOKEN" | jq -r '.data.receiptNumber')
+echo "$RECEIPT" | grep -q "^RCT-" || fail "receipt missing, got $RECEIPT"
+
 say "notifications delivered"
 UNREAD=""
 for i in $(seq 1 30); do
@@ -90,4 +115,4 @@ for i in $(seq 1 30); do
 done
 [ "$UNREAD" != "0" ] || fail "rider has no notifications"
 
-echo "E2E PASS: register -> verify -> login -> driver online -> ride -> payment -> notifications (unread=$UNREAD)"
+echo "E2E PASS: register -> verify -> login -> driver online -> promo -> estimate -> ride(COMFORT) -> trail($TRAIL_COUNT) -> payment -> receipt($RECEIPT) -> notifications (unread=$UNREAD)"
