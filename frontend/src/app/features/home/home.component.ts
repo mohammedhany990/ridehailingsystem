@@ -91,9 +91,11 @@ const TIERS: TierOption[] = [
           }
         </div>
 
-        <button type="button" class="cta" [disabled]="requesting()" (click)="requestRide()">
-          {{ requesting() ? ('common.loading' | t) + '…' : ('home.requestRide' | t) + ' · ' + selectedTierLabel() }}
-        </button>
+        <div class="sheet-footer">
+          <button type="button" class="cta" [disabled]="requesting()" (click)="requestRide()">
+            {{ requesting() ? ('common.loading' | t) + '…' : ('home.requestRide' | t) + ' · ' + selectedTierLabel() }}
+          </button>
+        </div>
       </div>
     }
 
@@ -149,7 +151,7 @@ const TIERS: TierOption[] = [
       border-radius: var(--radius-xl) var(--radius-xl) 0 0;
       padding: 12px 18px calc(env(safe-area-inset-bottom, 0px) + 88px);
       box-shadow: var(--shadow-lg); animation: pop var(--dur-med) var(--ease-out);
-      max-height: 62dvh; overflow-y: auto;
+      max-height: 68dvh; overflow-y: auto;
     }
     .sheet.small { text-align: center; padding-top: 22px; }
     .grabber { width: 42px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 12px; }
@@ -185,6 +187,12 @@ const TIERS: TierOption[] = [
     .tier-price { text-align: end; display: flex; flex-direction: column; }
     .tier-price span { font-size: 11px; color: var(--text-faint); }
     .shimmer { display: block; width: 56px; height: 14px; border-radius: 6px; background: var(--line); animation: fade-in 1s infinite alternate; }
+    .sheet-footer {
+      position: sticky; bottom: calc(-1 * (env(safe-area-inset-bottom, 0px) + 88px));
+      margin: 10px -18px calc(-1 * (env(safe-area-inset-bottom, 0px) + 88px));
+      padding: 12px 18px calc(env(safe-area-inset-bottom, 0px) + 100px);
+      background: linear-gradient(to top, var(--bg-elev) 78%, transparent);
+    }
     .cta {
       width: 100%; padding: 15px; border: none; border-radius: var(--radius-md);
       background: linear-gradient(135deg, var(--brand), var(--brand-strong));
