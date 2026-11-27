@@ -51,6 +51,7 @@ graph TD
 | Service Name | Port | Description | Primary Stack |
 | :--- | :---: | :--- | :--- |
 | **Eureka Server** | `8761` | Service Registry & Discovery for all microservices. | Spring Cloud Eureka Server |
+| **Config Server** | `8889` | Centralized configuration for all services, served from `./config-repo`. Secrets stay in `.env` and are injected per container. | Spring Cloud Config Server |
 | **API Gateway** | `8888` | Main entry point for clients. Handles routing and security filter integration. | Spring Cloud Gateway |
 | **Auth Service** | `8081` | Core authentication provider. Manages JWT issuances, hashing passwords, registration, and Google OAuth integration. | Spring Boot Security, JWT, Redis, PostgreSQL |
 | **User Service** | `8082` | Handles user roles (Riders/Drivers), vehicle registration, and profile detail management. | Spring Data JPA, PostgreSQL |

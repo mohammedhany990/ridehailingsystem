@@ -1,36 +1,5 @@
-server:
-  port: 8089
-
-osrm:
-  base-url: ${OSRM_BASE_URL:https://router.project-osrm.org}
-
 spring:
   application:
     name: map-service
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: always
-eureka:
-  client:
-    service-url:
-      defaultZone: http://eureka-server:8761/eureka
-    register-with-eureka: true
-    fetch-registry: true
-
-  instance:
-    prefer-ip-address: true
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-
-logging:
-  level:
-    com.ridehailing.mapservice: INFO
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8889}

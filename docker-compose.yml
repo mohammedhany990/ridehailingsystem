@@ -11,6 +11,13 @@ x-spring-service: &spring-service
   restart: unless-stopped
   networks:
     - ride-net
+  depends_on:
+    config-server:
+      condition: service_healthy
+
+x-spring-env: &spring-env
+  CONFIG_SERVER_URL: http://config-server:8889
+  EUREKA_URI: http://eureka-server:8761/eureka
 
 services:
 
@@ -106,6 +113,24 @@ services:
       ride-hailing-postgres:
         condition: service_healthy
 
+  config-server:
+    <<: *spring-service
+    container_name: config-server
+    build: ./config-server
+    depends_on: []
+    ports:
+      - "8889:8889"
+    environment:
+      CONFIG_REPO_LOCATION: file:/config-repo
+    volumes:
+      - ./config-repo:/config-repo:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8889/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
   eureka-server:
     <<: *spring-service
     container_name: eureka-server
@@ -132,10 +157,13 @@ services:
       - "8888:8888"
 
     depends_on:
+      config-server:
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
 
     environment:
+      <<: *spring-env
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
       SPRING_APPLICATION_NAME: gateway-service
       SPRING_DATA_REDIS_HOST: redis
@@ -157,6 +185,7 @@ services:
       - "8081:8081"
 
     environment:
+      <<: *spring-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://ride-hailing-postgres:5432/auth_db
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
@@ -174,6 +203,8 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: true
 
     depends_on:
+      config-server:
+        condition: service_healthy
       ride-hailing-postgres:
         condition: service_healthy
       redis:
@@ -188,6 +219,7 @@ services:
       - "8082:8082"
 
     environment:
+      <<: *spring-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://ride-hailing-postgres:5432/user_db
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
@@ -196,6 +228,8 @@ services:
       SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
 
     depends_on:
+      config-server:
+        condition: service_healthy
       ride-hailing-postgres:
         condition: service_healthy
 
@@ -215,6 +249,7 @@ services:
       - "8083:8083"
 
     environment:
+      <<: *spring-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://ride-hailing-postgres:5432/ride_db
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
@@ -226,6 +261,8 @@ services:
       PRICING_SERVICE_URL: http://pricing-service:8085
 
     depends_on:
+      config-server:
+        condition: service_healthy
       ride-hailing-postgres:
         condition: service_healthy
       location-service:
@@ -253,6 +290,7 @@ services:
       - "8085:8085"
 
     environment:
+      <<: *spring-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://ride-hailing-postgres:5432/pricing_db
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
@@ -261,6 +299,8 @@ services:
       SPRING_DATA_REDIS_PASSWORD: ${SPRING_DATA_REDIS_PASSWORD}
 
     depends_on:
+      config-server:
+        condition: service_healthy
       ride-hailing-postgres:
         condition: service_healthy
       redis:
@@ -282,12 +322,15 @@ services:
       - "8088:8088"
 
     environment:
+      <<: *spring-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://ride-hailing-postgres:5432/rating_db
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
 
     depends_on:
+      config-server:
+        condition: service_healthy
       ride-hailing-postgres:
         condition: service_healthy
 
@@ -307,6 +350,7 @@ services:
       - "8084:8084"
 
     environment:
+      <<: *spring-env
       JWT_SECRET: ${JWT_SECRET}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PASSWORD: ${SPRING_DATA_REDIS_PASSWORD}
@@ -316,6 +360,8 @@ services:
       USER_SERVICE_URL: http://user-service:8082
 
     depends_on:
+      config-server:
+        condition: service_healthy
       redis:
         condition: service_healthy
       mongodb:
@@ -339,6 +385,7 @@ services:
       - "8089:8089"
 
     environment:
+      <<: *spring-env
       JWT_SECRET: ${JWT_SECRET}
 
     healthcheck:

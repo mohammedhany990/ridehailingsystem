@@ -1,0 +1,56 @@
+server:
+  port: 8084
+
+spring:
+  data:
+    mongodb:
+      host: ${SPRING_DATA_MONGODB_HOST:localhost}
+      port: ${SPRING_DATA_MONGODB_PORT:27017}
+      database: ${SPRING_DATA_MONGODB_DATABASE:location_db}
+      username: ${SPRING_DATA_MONGODB_USERNAME:mongo}
+      password: ${SPRING_DATA_MONGODB_PASSWORD:mongo}
+      authentication-database: admin
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD:redis123}
+
+jwt:
+  secret: ${JWT_SECRET}
+
+location-service:
+  stale-driver-threshold-minutes: 2
+  history-retention-days: 30
+  nearby-max-radius-km: 50
+
+feign:
+  client:
+    config:
+      user-service:
+        url: ${USER_SERVICE_URL:http://localhost:8082}
+
+logging:
+  level:
+    com.ridehailing.locationservice: INFO
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        automatic-transition-from-open-to-half-open-enabled: true
+        permitted-number-of-calls-in-half-open-state: 3
+    instances:
+      user:
+        base-config: default
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 500ms
+    instances:
+      user:
+        base-config: default
