@@ -25,7 +25,7 @@ RUN mvn package -DskipTests -B
 # Uses a minimal JRE Alpine image — much smaller than the build image
 # Build image: ~700MB   →   Runtime image: ~200MB
 # ─────────────────────────────────────────────────────────────────────────────
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 
 WORKDIR /app
 
