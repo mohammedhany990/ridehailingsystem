@@ -15,6 +15,7 @@ jobs:
         service:
           - eureka-server
           - config-server
+          - notification-service
           - api-gateway
           - auth-service
           - user-service
@@ -32,7 +33,12 @@ jobs:
           cache: maven
       - name: Build ${{ matrix.service }}
         working-directory: ${{ matrix.service }}
-        run: ./mvnw -B clean package -DskipTests
+        run: |
+          if [ "${{ matrix.service }}" = "notification-service" ]; then
+            ./mvnw -B clean verify
+          else
+            ./mvnw -B clean package -DskipTests
+          fi
 
   compose-smoke:
     runs-on: ubuntu-latest
@@ -72,6 +78,7 @@ jobs:
             [pricing]="http://localhost:8085/actuator/health"
             [rating]="http://localhost:8088/actuator/health"
             [map]="http://localhost:8089/actuator/health"
+            [notification]="http://localhost:8090/actuator/health"
           )
           for name in "${!checks[@]}"; do
             url="${checks[$name]}"

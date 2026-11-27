@@ -60,6 +60,7 @@ graph TD
 | **Pricing Service** | `8085` | Dynamic pricing engine utilizing base rates, per-kilometer/per-minute rules, and surge multipliers. | Spring Data JPA, Redis, PostgreSQL |
 | **Rating Service** | `8088` | Stores, records, and aggregates ratings between riders and drivers post-ride. | Spring Data JPA, PostgreSQL |
 | **Map Service** | `8089` | Internal routing proxy, distance computations, and external mapping provider integration. | Spring Boot |
+| **Notification Service** | `8090` | Consumes ride lifecycle events from Kafka and delivers notifications in-app (REST), over WebSocket (STOMP), with a pluggable channel design. | Spring Kafka, WebSocket, PostgreSQL |
 
 ---
 
