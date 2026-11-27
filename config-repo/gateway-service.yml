@@ -40,7 +40,6 @@ spring:
           predicates:
             - Path=/api/auth/**
           filters:
-            - StripPrefix=1
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@ipKeyResolver}"
@@ -50,9 +49,8 @@ spring:
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
-            - Path=/api/users/**
+            - Path=/api/users/**, /api/drivers/**, /api/vehicles/**
           filters:
-            - StripPrefix=1
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
@@ -64,7 +62,6 @@ spring:
           predicates:
             - Path=/api/rides/**
           filters:
-            - StripPrefix=1
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
@@ -76,7 +73,6 @@ spring:
           predicates:
             - Path=/api/payments/**
           filters:
-            - StripPrefix=1
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
@@ -88,7 +84,6 @@ spring:
           predicates:
             - Path=/api/notifications/**
           filters:
-            - StripPrefix=1
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
@@ -110,7 +105,6 @@ spring:
           predicates:
             - Path=/api/location/**
           filters:
-            - StripPrefix=1
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@userKeyResolver}"
