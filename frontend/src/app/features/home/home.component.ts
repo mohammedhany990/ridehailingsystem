@@ -60,7 +60,21 @@ const TIERS: TierOption[] = [
         <div class="tiers">
           @for (tier of tiers(); track tier.type) {
             <button type="button" class="tier" [class.selected]="selectedTier() === tier.type" (click)="selectTier(tier.type)">
-              <div class="tier-icon" aria-hidden="true">{{ tierIcon(tier.type) }}</div>
+              <div class="tier-icon" [attr.data-tier]="tier.type" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  @if (tier.type === 'MOTO') {
+                    <circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17h6l3-7h3M12 7h2l1.5 3"/>
+                  } @else if (tier.type === 'XL') {
+                    <path d="M3 16V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8M3 16h18M3 16v1a1 1 0 0 0 1 1h1m14-2v1a1 1 0 0 1-1 1h-1"/><circle cx="8" cy="18" r="1.6"/><circle cx="16" cy="18" r="1.6"/><path d="M7 6v4m4-4v4m4-4v4"/>
+                  } @else if (tier.type === 'PREMIUM') {
+                    <path d="M4 15l1.6-4.6A2 2 0 0 1 7.5 9h9a2 2 0 0 1 1.9 1.4L20 15m-16 0h16v3h-2.5m-11 0H4v-3Zm3 3a1.8 1.8 0 1 0 0-.01Zm10 0a1.8 1.8 0 1 0 0-.01Z"/><path d="M12 5l1.2 1.8L15 6l-.6 1.9"/>
+                  } @else if (tier.type === 'COMFORT') {
+                    <path d="M4 15l1.6-4.6A2 2 0 0 1 7.5 9h9a2 2 0 0 1 1.9 1.4L20 15m-16 0h16v3h-2.5m-11 0H4v-3Zm3 3a1.8 1.8 0 1 0 0-.01Zm10 0a1.8 1.8 0 1 0 0-.01Z"/><path d="M9 9V7.5A1.5 1.5 0 0 1 10.5 6h3A1.5 1.5 0 0 1 15 7.5V9"/>
+                  } @else {
+                    <path d="M4 15l1.6-4.6A2 2 0 0 1 7.5 9h9a2 2 0 0 1 1.9 1.4L20 15m-16 0h16v3h-2.5m-11 0H4v-3Zm3 3a1.8 1.8 0 1 0 0-.01Zm10 0a1.8 1.8 0 1 0 0-.01Z"/>
+                  }
+                </svg>
+              </div>
               <div class="tier-meta">
                 <strong>{{ tier.label }}</strong>
                 <span>{{ tier.blurb }}</span>
@@ -164,7 +178,8 @@ const TIERS: TierOption[] = [
     }
     .tier:active { transform: scale(0.985); }
     .tier.selected { border-color: var(--brand); background: var(--brand-soft); }
-    .tier-icon { font-size: 22px; width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--bg-card); display: grid; place-items: center; }
+    .tier-icon { width: 46px; height: 46px; border-radius: var(--radius-sm); background: var(--bg-card); display: grid; place-items: center; color: var(--text-dim); }
+    .tier.selected .tier-icon { color: var(--brand-strong); background: var(--bg-elev); }
     .tier-meta { flex: 1; display: flex; flex-direction: column; }
     .tier-meta span { font-size: 12px; color: var(--text-dim); }
     .tier-price { text-align: end; display: flex; flex-direction: column; }
@@ -223,9 +238,6 @@ export class HomeComponent implements OnDestroy {
     () => this.tiers().find((t) => t.type === this.selectedTier())?.label ?? '',
   );
 
-  tierIcon(type: string): string {
-    return { MOTO: '🛵', STANDARD: '🚗', COMFORT: '🚙', XL: '🚐', PREMIUM: '🏎️' }[type] ?? '🚗';
-  }
 
   onTap(point: { lat: number; lng: number }): void {
     if (this.stage() === 'pickup') {
