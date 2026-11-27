@@ -1,0 +1,25 @@
+services:
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: ride-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - ride-net
+
+  auth-service:
+    environment:
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_USERNAME: e2e
+      SPRING_MAIL_PASSWORD: e2e
+    depends_on:
+      config-server:
+        condition: service_healthy
+      ride-hailing-postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
