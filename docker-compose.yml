@@ -138,6 +138,8 @@ services:
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
       SPRING_APPLICATION_NAME: gateway-service
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PASSWORD: ${SPRING_DATA_REDIS_PASSWORD}
 
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8888/actuator/health || exit 1"]
