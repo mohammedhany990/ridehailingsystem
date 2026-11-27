@@ -242,6 +242,16 @@ services:
       redis:
         condition: service_healthy
 
+  frontend:
+    container_name: ride-frontend
+    build: ./frontend
+
+    ports:
+      - "8080:80"
+
+    depends_on:
+      - api-gateway
+
   user-service:
     <<: *spring-service
     container_name: user-service
