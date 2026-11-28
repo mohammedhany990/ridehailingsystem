@@ -21,7 +21,7 @@ register_and_verify() {
   for i in $(seq 1 30); do
     otp=$(curl -fsS "$MAILHOG/api/v2/messages?limit=50" \
       | jq -r --arg to "$email" '[.items[] | select(.To[0].Mailbox + "@" + .To[0].Domain == $to)][0].Content.Body // empty' \
-      | grep -oE '[0-9]{6}' | head -1)
+      | grep -oE '[0-9]{6}' | head -1 || true)
     [ -n "$otp" ] && break
     sleep 2
   done
@@ -32,7 +32,7 @@ register_and_verify() {
 
 login() {
   curl -fsS -X POST "$GW/api/auth/login" -H 'Content-Type: application/json' \
-    -d "{\"email\":\"$1\",\"password\":\"$PASS\"}" | jq -r '.data.accessToken'
+    -d "{\"email\":\"$1\",\"password\":\"$PASS\"}" | jq -r '.data.accessToken' || fail "login $1"
 }
 
 register_and_verify "E2E Rider" "$RIDER_EMAIL" RIDER
