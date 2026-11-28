@@ -36,9 +36,9 @@ jobs:
         working-directory: ${{ matrix.service }}
         run: |
           if [ "${{ matrix.service }}" = "notification-service" ] || [ "${{ matrix.service }}" = "payment-service" ] || [ "${{ matrix.service }}" = "ride-service" ] || [ "${{ matrix.service }}" = "pricing-service" ]; then
-            ./mvnw -B clean verify
+            mvn -B clean verify
           else
-            ./mvnw -B clean package -DskipTests
+            mvn -B clean package -DskipTests
           fi
       - name: Upload coverage report
         if: matrix.service == 'notification-service' || matrix.service == 'payment-service'
@@ -117,13 +117,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Create .env
         run: |
-          cat > .env <<'EOF'
+          JWT_SECRET=$(openssl rand -base64 48)
+          cat > .env <<EOF
           POSTGRES_USER=postgres
           POSTGRES_PASSWORD=ci_postgres
           MONGO_USER=mongo
           MONGO_PASSWORD=ci_mongo
           SPRING_DATA_REDIS_PASSWORD=ci_redis
-          JWT_SECRET=$(openssl rand -base64 48)
+          JWT_SECRET=$JWT_SECRET
           SPRING_MAIL_HOST=mailhog
           SPRING_MAIL_PORT=1025
           SPRING_MAIL_USERNAME=e2e
