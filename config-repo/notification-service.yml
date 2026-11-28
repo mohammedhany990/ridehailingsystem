@@ -32,11 +32,8 @@ jwt:
 app:
   kafka:
     ride-events-topic: ride-events
+    payment-events-topic: payment-events
 
 logging:
   level:
     com.ridehailing.notificationservice: INFO
-
-app:
-  kafka:
-    payment-events-topic: payment-events
