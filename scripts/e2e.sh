@@ -30,14 +30,19 @@ register_and_verify() {
       else
         body=$(echo "$body" | sed 's/=\r\n//g; s/=\n//g')
       fi
-      otp=$(echo "$body" | grep -oE '[0-9]{6}' | head -1 || true)
+      otp=$(echo "$body" | grep -oE '<h1>[0-9]{6}</h1>' | grep -oE '[0-9]{6}' | head -1 || true)
+      [ -z "$otp" ] && otp=$(echo "$body" | grep -oE '[0-9]{6}' | head -1 || true)
     fi
     [ -n "$otp" ] && break
     sleep 2
   done
   [ -n "$otp" ] || fail "no OTP mail for $email"
-  curl -fsS -X POST "$GW/api/auth/verify-email" -H 'Content-Type: application/json' \
-    -d "{\"email\":\"$email\",\"otp\":\"$otp\"}" > /dev/null || fail "verify-email $role"
+  if ! curl -fsS -X POST "$GW/api/auth/verify-email" -H 'Content-Type: application/json' \
+    -d "{\"email\":\"$email\",\"otp\":\"$otp\"}" > /dev/null; then
+    echo "DEBUG cte=$cte otp=$otp"
+    echo "DEBUG body head: $(echo "$body" | head -c 300)"
+    fail "verify-email $role"
+  fi
 }
 
 login() {
