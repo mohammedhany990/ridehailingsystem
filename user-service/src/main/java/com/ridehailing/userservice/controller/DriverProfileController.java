@@ -121,6 +121,18 @@ public class DriverProfileController {
     }
 
 
+    @PutMapping("/{userId}/start-ride")
+    public ResponseEntity<ApiResponse<String>> startRideForDriver(@PathVariable UUID userId) {
+        return ResponseEntity
+                .ok(driverProfileService.startRide(userId));
+    }
+
+    @PutMapping("/{userId}/finish-ride")
+    public ResponseEntity<ApiResponse<String>> finishRideForDriver(@PathVariable UUID userId) {
+        return ResponseEntity
+                .ok(driverProfileService.finishRide(userId));
+    }
+
     @PutMapping("/me/finish-ride")
     public ResponseEntity<ApiResponse<String>> finishRide(@AuthenticationPrincipal Jwt jwt) {
 
