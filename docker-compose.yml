@@ -7,6 +7,7 @@ volumes:
   mongodb-data:
   redis-data:
   kafka-data:
+  auth-uploads:
 
 x-spring-service: &spring-service
   restart: unless-stopped
