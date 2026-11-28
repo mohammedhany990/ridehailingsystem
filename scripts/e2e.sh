@@ -14,9 +14,15 @@ fail() { echo "E2E FAIL: $*" >&2; exit 1; }
 register_and_verify() {
   local name="$1" email="$2" role="$3"
   say "register $role $email"
-  curl -fsS -X POST "$GW/api/auth/register" -H 'Content-Type: application/json' \
-    -d "{\"name\":\"$name\",\"email\":\"$email\",\"phone\":\"01000000000\",\"password\":\"$PASS\",\"role\":\"$role\"}" > /dev/null \
-    || fail "register $role"
+  local attempt
+  for attempt in $(seq 1 12); do
+    if curl -fsS -X POST "$GW/api/auth/register" -H 'Content-Type: application/json' \
+      -d "{\"name\":\"$name\",\"email\":\"$email\",\"phone\":\"01000000000\",\"password\":\"$PASS\",\"role\":\"$role\"}" > /dev/null; then
+      break
+    fi
+    [ "$attempt" = "12" ] && fail "register $role"
+    sleep 5
+  done
   local otp=""
   for i in $(seq 1 30); do
     local msg body cte
