@@ -5,6 +5,8 @@ import com.ridehailing.authservice.dto.*;
 import com.ridehailing.authservice.entity.Role;
 import com.ridehailing.authservice.entity.User;
 import com.ridehailing.authservice.exception.*;
+import com.ridehailing.authservice.oauth.GoogleTokenVerifier;
+import com.ridehailing.authservice.oauth.GoogleUserInfo;
 import com.ridehailing.authservice.otp.OtpService;
 import com.ridehailing.authservice.otp.OtpType;
 import com.ridehailing.authservice.repository.UserRepository;
@@ -24,6 +26,7 @@ public class AuthService {
     private final JwtTokenService jwtTokenService;
     private final AuthenticationManager authenticationManager;
     private final OtpService otpService;
+    private final GoogleTokenVerifier googleTokenVerifier;
 
     @Transactional
     public ApiResponse<String> register(RegisterRequest request) {
@@ -79,6 +82,11 @@ public class AuthService {
         }
 
         return buildAuthResponse(user);
+    }
+
+    public AuthResponse loginWithGoogle(String idToken) {
+        GoogleUserInfo googleUser = googleTokenVerifier.verify(idToken);
+        return loginWithOAuth2(googleUser.name(), googleUser.email(), googleUser.subject(), "google");
     }
 
     @Transactional

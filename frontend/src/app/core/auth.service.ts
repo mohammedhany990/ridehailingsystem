@@ -55,6 +55,16 @@ export class AuthService {
     return this.api.post('/api/auth/resend-verification-otp', { email });
   }
 
+  loginWithGoogle(idToken: string): Observable<AuthResponse> {
+    return this.api.post<AuthResponse>('/api/auth/google', { idToken }).pipe(
+      tap((res) => {
+        this.tokenSignal.set(res.accessToken);
+        localStorage.setItem(TOKEN_KEY, res.accessToken);
+        if (res.refreshToken) localStorage.setItem(REFRESH_KEY, res.refreshToken);
+      }),
+    );
+  }
+
   login(email: string, password: string): Observable<AuthResponse> {
     return this.api.post<AuthResponse>('/api/auth/login', { email, password }).pipe(
       tap((res) => {

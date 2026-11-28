@@ -70,6 +70,15 @@ register_and_verify "E2E Driver" "$DRIVER_EMAIL" DRIVER
 
 RIDER_TOKEN=$(login "$RIDER_EMAIL"); [ -n "$RIDER_TOKEN" ] || fail "rider login"
 DRIVER_TOKEN=$(login "$DRIVER_EMAIL"); [ -n "$DRIVER_TOKEN" ] || fail "driver login"
+
+say "google sign-in endpoint present (disabled without client id)"
+GOOGLE_CODE=$(curl -s -o /tmp/e2e-google.json -w '%{http_code}' -X POST "$GW/api/auth/google" -H 'Content-Type: application/json' -d '{"idToken":"not-a-real-token"}')
+if [ -n "$GOOGLE_CLIENT_ID" ]; then
+  [ "$GOOGLE_CODE" = "401" ] || fail "google endpoint with fake token returned $GOOGLE_CODE, expected 401"
+else
+  [ "$GOOGLE_CODE" = "503" ] || fail "google endpoint unconfigured returned $GOOGLE_CODE, expected 503"
+  jq -e '.message | test("not configured")' /tmp/e2e-google.json > /dev/null || fail "google endpoint unconfigured message missing"
+fi
 say "rider profile: read, update, avatar"
 PROFILE_NAME=$(curl -fsS "$GW/api/auth/profile/me" -H "Authorization: Bearer $RIDER_TOKEN" | jq -r '.data.name')
 [ -n "$PROFILE_NAME" ] && [ "$PROFILE_NAME" != "null" ] || fail "profile read"
@@ -183,4 +192,4 @@ say "driver earnings endpoint"
 curl -fsS "$GW/api/payments/earnings/me/daily" -H "Authorization: Bearer $DRIVER_TOKEN" \
   | jq -e '.success == true' > /dev/null || fail "driver earnings endpoint"
 
-echo "E2E PASS: register -> verify -> login -> driver online -> promo -> estimate -> ride(COMFORT) -> trail($TRAIL_COUNT) -> payment -> receipt($RECEIPT) -> notifications (unread=$UNREAD) -> earnings"
+echo "E2E PASS: register -> verify -> login -> google-endpoint($GOOGLE_CODE) -> driver online -> promo -> estimate -> ride(COMFORT) -> trail($TRAIL_COUNT) -> payment -> receipt($RECEIPT) -> notifications (unread=$UNREAD) -> earnings"

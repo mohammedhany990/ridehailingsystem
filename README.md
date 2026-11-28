@@ -59,7 +59,7 @@ graph TD
 | **Eureka Server** | `8761` | Service Registry & Discovery for all microservices. | Spring Cloud Eureka Server |
 | **Config Server** | `8889` | Centralized configuration for all services, served from `./config-repo`. Secrets stay in `.env` and are injected per container. | Spring Cloud Config Server |
 | **API Gateway** | `8888` | Main entry point for clients. Handles routing and security filter integration. | Spring Cloud Gateway |
-| **Auth Service** | `8081` | Core authentication provider: registration with OTP email verification, JWT access/refresh issuance, password reset, user profile + avatars, admin user stats. | Spring Boot Security, JWT, Redis, PostgreSQL |
+| **Auth Service** | `8081` | Core authentication provider: registration with OTP email verification, Google sign-in (ID token verification, account linking, find-or-create), JWT access/refresh issuance, password reset, user profile + avatars, admin user stats. | Spring Boot Security, JWT, Redis, PostgreSQL, Google Identity |
 | **User Service** | `8082` | Handles user roles (Riders/Drivers), vehicle registration, and profile detail management. | Spring Data JPA, PostgreSQL |
 | **Ride Service** | `8083` | Manages the ride lifecycle (`REQUESTED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`), booking calculations, and matches drivers. | Spring Data JPA, PostgreSQL |
 | **Location Service** | `8084` | Real-time driver location updates, geo-indexing, and geospatial query tracking. | MongoDB (2dsphere), Redis, Spring Boot |
@@ -115,6 +115,10 @@ MAIL_PASSWORD=your_smtp_password
 STRIPE_ENABLED=false
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
+# Google sign-in: create an OAuth 2.0 Client ID (Web) in Google Cloud Console and paste it here;
+# add your app origins (e.g. http://localhost:8080) under Authorized JavaScript origins.
+# Leave empty to hide the Google button and disable the endpoint.
+GOOGLE_CLIENT_ID=
 ```
 
 ### 2. Building the Project
@@ -138,7 +142,7 @@ docker compose ps
 
 ## 🔗 Gateway Routing Table
 
-All client traffic goes through the **API Gateway** on port `8888`, which validates JWTs at the edge and applies per-route rate limits. Public paths are register / login / OTP verification / password reset only; everything else needs a valid token.
+All client traffic goes through the **API Gateway** on port `8888`, which validates JWTs at the edge and applies per-route rate limits. Public paths are register / login / Google sign-in / OTP verification / password reset only; everything else needs a valid token.
 
 | Target Service | Path Prefix | Example Endpoint |
 | :--- | :--- | :--- |
@@ -172,7 +176,7 @@ A mobile-first **Angular 20** app (standalone components + signals) lives in `./
 - **Event-driven payments:** a Kafka ride-completed event creates the payment; charges go through a pluggable gateway (Stripe test mode behind `STRIPE_ENABLED`, simulator by default) with idempotency keys; receipts are ownership-checked.
 - **Scheduled jobs under ShedLock** (one replica runs each job): stale-ride expiry, daily driver-earnings rollups, location cleanup, stale-driver sweep.
 - **Driver earnings** daily chart and **admin dashboards** (users by role, rides by status, revenue) gated by `ROLE_ADMIN`.
-- **Security:** OTP email verification, JWT access/refresh tokens, gateway-edge token validation, security headers, per-route Redis rate limiting.
+- **Security:** OTP email verification, Google sign-in with server-side ID token verification (audience + issuer checked against your client ID), JWT access/refresh tokens, gateway-edge token validation, security headers, per-route Redis rate limiting.
 
 ## ✅ CI / CD & Testing
 

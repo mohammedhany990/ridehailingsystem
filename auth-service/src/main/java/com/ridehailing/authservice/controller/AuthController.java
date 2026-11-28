@@ -45,6 +45,21 @@ public class AuthController {
         );
     }
 
+    @PostMapping("/google")
+    @Operation(summary = "Login or register using a Google ID token")
+    public ResponseEntity<ApiResponse<AuthResponse>> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+
+        AuthResponse response = authService.loginWithGoogle(request.getIdToken());
+
+        return ResponseEntity.ok(
+                ApiResponse.<AuthResponse>builder()
+                        .success(true)
+                        .message("Login successful")
+                        .data(response)
+                        .build()
+        );
+    }
+
     @PostMapping("/refresh")
     @Operation(summary = "Refresh access token")
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@RequestHeader("Refresh-Token") String refreshToken    ) {

@@ -4,11 +4,12 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { TPipe } from '../../shared/t.pipe';
 import { AUTH_STYLES } from './auth.styles';
+import { GoogleButtonComponent } from './google-button/google-button.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TPipe],
+  imports: [ReactiveFormsModule, RouterLink, TPipe, GoogleButtonComponent],
   template: `
     <div class="auth-wrap">
       <div class="glow a"></div><div class="glow b"></div>
@@ -31,6 +32,7 @@ import { AUTH_STYLES } from './auth.styles';
             {{ loading() ? ('common.loading' | t) + '…' : ('auth.login' | t) }}
           </button>
         </form>
+        <app-google-button (credential)="onGoogleCredential($event)" (failed)="error.set($event)"></app-google-button>
         <p class="alt">{{ 'auth.noAccount' | t }} <a routerLink="/register">{{ 'auth.register' | t }}</a></p>
       </div>
     </div>
@@ -60,6 +62,18 @@ export class LoginComponent {
       error: (err) => {
         this.loading.set(false);
         this.error.set(err?.error?.message ?? 'Login failed');
+      },
+    });
+  }
+
+  onGoogleCredential(idToken: string): void {
+    this.loading.set(true);
+    this.error.set('');
+    this.auth.loginWithGoogle(idToken).subscribe({
+      next: () => this.router.navigateByUrl('/'),
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set(err?.error?.message ?? 'Google sign-in failed');
       },
     });
   }
