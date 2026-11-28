@@ -36,9 +36,9 @@ jobs:
         working-directory: ${{ matrix.service }}
         run: |
           if [ "${{ matrix.service }}" = "notification-service" ] || [ "${{ matrix.service }}" = "payment-service" ] || [ "${{ matrix.service }}" = "ride-service" ] || [ "${{ matrix.service }}" = "pricing-service" ]; then
-            ./mvnw -B clean verify
+            mvn -B clean verify
           else
-            ./mvnw -B clean package -DskipTests
+            mvn -B clean package -DskipTests
           fi
       - name: Upload coverage report
         if: matrix.service == 'notification-service' || matrix.service == 'payment-service'
