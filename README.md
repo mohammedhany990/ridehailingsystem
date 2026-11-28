@@ -21,7 +21,13 @@ graph TD
         Gateway --> Pricing[Pricing Service]
         Gateway --> Rating[Rating Service]
         Gateway --> Map[Map Service]
+        Gateway --> Payment[Payment Service]
+        Gateway --> Notif[Notification Service]
     end
+    
+    Ride -->|ride events| Kafka[(Kafka)]
+    Kafka --> Payment
+    Kafka --> Notif
 
     subgraph Datastores
         Auth -.-> PG[(PostgreSQL)]
@@ -53,7 +59,7 @@ graph TD
 | **Eureka Server** | `8761` | Service Registry & Discovery for all microservices. | Spring Cloud Eureka Server |
 | **Config Server** | `8889` | Centralized configuration for all services, served from `./config-repo`. Secrets stay in `.env` and are injected per container. | Spring Cloud Config Server |
 | **API Gateway** | `8888` | Main entry point for clients. Handles routing and security filter integration. | Spring Cloud Gateway |
-| **Auth Service** | `8081` | Core authentication provider. Manages JWT issuances, hashing passwords, registration, and Google OAuth integration. | Spring Boot Security, JWT, Redis, PostgreSQL |
+| **Auth Service** | `8081` | Core authentication provider: registration with OTP email verification, JWT access/refresh issuance, password reset, user profile + avatars, admin user stats. | Spring Boot Security, JWT, Redis, PostgreSQL |
 | **User Service** | `8082` | Handles user roles (Riders/Drivers), vehicle registration, and profile detail management. | Spring Data JPA, PostgreSQL |
 | **Ride Service** | `8083` | Manages the ride lifecycle (`REQUESTED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`), booking calculations, and matches drivers. | Spring Data JPA, PostgreSQL |
 | **Location Service** | `8084` | Real-time driver location updates, geo-indexing, and geospatial query tracking. | MongoDB (2dsphere), Redis, Spring Boot |
@@ -105,10 +111,10 @@ SPRING_MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USERNAME=your_smtp_user
 MAIL_PASSWORD=your_smtp_password
-STRIPE_SECRET_KEY=your_stripe_secret_key
+# Payment gateway: simulated by default; set STRIPE_ENABLED=true with a test key for Stripe test mode
+STRIPE_ENABLED=false
+STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
 ### 2. Building the Project
@@ -132,16 +138,54 @@ docker compose ps
 
 ## 🔗 Gateway Routing Table
 
-All microservices are reachable through the **API Gateway** on port `8888`. Below is the path routing mapping:
+All client traffic goes through the **API Gateway** on port `8888`, which validates JWTs at the edge and applies per-route rate limits. Public paths are register / login / OTP verification / password reset only; everything else needs a valid token.
 
 | Target Service | Path Prefix | Example Endpoint |
 | :--- | :--- | :--- |
-| **Auth Service** | `/api/auth/**` | `POST http://localhost:8888/auth-service/api/auth/register` |
-| **User Service** | `/api/users/**` | `GET http://localhost:8888/user-service/api/drivers/drivers/{id}` |
-| **Ride Service** | `/api/rides/**` | `POST http://localhost:8888/ride-service/api/rides/request` |
-| **Location Service** | `/api/location/**` | `POST http://localhost:8888/location-service/api/location/update` |
-| **Pricing Service** | `/api/pricing/**` | `GET http://localhost:8888/pricing-service/api/pricing/estimate` |
-| **Rating Service** | `/api/ratings/**` | `POST http://localhost:8888/rating-service/api/ratings/submit` |
+| **Auth Service** | `/api/auth/**` | `POST http://localhost:8888/api/auth/register` |
+| **User Service** | `/api/users/**`, `/api/drivers/**`, `/api/vehicles/**` | `GET http://localhost:8888/api/drivers/{id}` |
+| **Ride Service** | `/api/rides/**` | `POST http://localhost:8888/api/rides/request` |
+| **Location Service** | `/api/location/**` | `POST http://localhost:8888/api/location/update` |
+| **Pricing Service** | `/api/pricing/**` | `GET http://localhost:8888/api/pricing/estimate` |
+| **Map Service** | `/api/maps/**` | `GET http://localhost:8888/api/maps/route` |
+| **Payment Service** | `/api/payments/**` | `GET http://localhost:8888/api/payments/me` |
+| **Notification Service** | `/api/notifications/**` | `GET http://localhost:8888/api/notifications/me` |
+| **WebSockets** | `/ws/location/**`, `/ws/notifications/**` | live driver location + notification streams |
+
+---
+
+## 📱 Angular Frontend
+
+A mobile-first **Angular 20** app (standalone components + signals) lives in `./frontend`:
+
+- Design system with CSS custom-property tokens, **dark and light themes**, full **English + Arabic (RTL)** support, reduced-motion and focus-ring accessibility.
+- **Leaflet + OpenStreetMap** maps with no paid API keys: tap-to-set pickup/dropoff, real OSRM route geometry, theme-matched tiles.
+- Tiered fare estimates with promo codes, ride request/cancel, **fare negotiation** (offer / counter / accept), test-mode payment and itemized receipt.
+- **Driver mode:** go online, location + breadcrumb reporting loop, incoming-request card, accept/start/complete, earnings chart.
+- Trip history with animated **trail replay**, profile page with avatar upload, live notifications over WebSocket.
+- Served by nginx in Docker (`frontend` service in compose) and production-built in CI.
+
+## ⭐ Product Highlights
+
+- **5 ride tiers** (MOTO, STANDARD, COMFORT, XL, PREMIUM) with per-tier base + per-km pricing.
+- **Fare negotiation:** rider proposes a price, driver counters or accepts - inDrive-style on top of metered estimates.
+- **Event-driven payments:** a Kafka ride-completed event creates the payment; charges go through a pluggable gateway (Stripe test mode behind `STRIPE_ENABLED`, simulator by default) with idempotency keys; receipts are ownership-checked.
+- **Scheduled jobs under ShedLock** (one replica runs each job): stale-ride expiry, daily driver-earnings rollups, location cleanup, stale-driver sweep.
+- **Driver earnings** daily chart and **admin dashboards** (users by role, rides by status, revenue) gated by `ROLE_ADMIN`.
+- **Security:** OTP email verification, JWT access/refresh tokens, gateway-edge token validation, security headers, per-route Redis rate limiting.
+
+## ✅ CI / CD & Testing
+
+Every push to `main` runs the GitHub Actions pipeline (`.github/workflows/ci.yml`):
+
+1. **Build + unit tests** for all 12 backend services and the Eureka/Config servers.
+2. **Compose smoke test:** the full `docker compose` stack must come up healthy, which includes the Angular production build (`ng build --configuration production` inside the frontend image).
+3. **End-to-end suite** (`scripts/e2e.sh`, 15 steps) against the real running stack: register -> OTP verify (via MailHog) -> login -> profile + avatar -> driver online + location -> promo + tiered estimates -> ride request/accept/start/complete with breadcrumbs -> Kafka payment -> charge + receipt -> notifications -> driver earnings.
+
+## 📚 Documentation
+
+- Milestone docs: `docs/milestones/M0` ... `M8` (what each milestone shipped, in plain language).
+- Runbooks: `docs/runbooks/` (e.g. JWT secret rotation).
 
 ---
 
