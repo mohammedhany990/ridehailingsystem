@@ -21,7 +21,7 @@ public class StripeGatewayImpl implements StripeGateway {
     }
 
     @Override
-    public String createPaymentIntent(BigDecimal amount, String currency, String idempotencyKey) {
+    public GatewayIntent createPaymentIntent(BigDecimal amount, String currency, String idempotencyKey) {
         try {
             long amountInMinor = amount.movePointRight(2).longValueExact();
             PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
@@ -37,7 +37,7 @@ public class StripeGatewayImpl implements StripeGateway {
                     params,
                     RequestOptions.builder().setIdempotencyKey(idempotencyKey).build()
             );
-            return intent.getId();
+            return new GatewayIntent(intent.getId(), intent.getClientSecret());
         } catch (Exception e) {
             throw new IllegalStateException("Stripe PaymentIntent creation failed: " + e.getMessage(), e);
         }

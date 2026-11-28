@@ -99,6 +99,22 @@ export interface Payment {
   createdAt: string;
 }
 
+export interface ChargeResponse {
+  id: string;
+  rideId: string;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  gateway: 'stripe' | 'simulated';
+  clientSecret: string | null;
+}
+
+export interface PaymentConfig {
+  gateway: 'stripe' | 'simulated';
+  publishableKey: string | null;
+}
+
 export interface Receipt {
   receiptNumber: string;
   paymentId: string;

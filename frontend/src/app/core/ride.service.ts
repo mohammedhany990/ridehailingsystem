@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
-import { FareEstimate, FareOffer, Receipt, Ride, RouteInfo, Trail } from './models';
+import { ChargeResponse, FareEstimate, FareOffer, Payment, PaymentConfig, Receipt, Ride, RouteInfo, Trail } from './models';
 
 export interface RideRequestBody {
   pickupLat: number;
@@ -76,8 +76,20 @@ export class RideService {
     return this.api.get('/api/payments/me', { page: 0, size: 50 });
   }
 
-  charge(paymentId: string): Observable<unknown> {
-    return this.api.post(`/api/payments/${paymentId}/charge`, {});
+  charge(paymentId: string): Observable<ChargeResponse> {
+    return this.api.post<ChargeResponse>(`/api/payments/${paymentId}/charge`, {});
+  }
+
+  paymentConfig(): Observable<PaymentConfig> {
+    return this.api.get<PaymentConfig>('/api/payments/config');
+  }
+
+  getPayment(paymentId: string): Observable<Payment> {
+    return this.api.get<Payment>(`/api/payments/${paymentId}`);
+  }
+
+  refreshPaymentStatus(paymentId: string): Observable<Payment> {
+    return this.api.post<Payment>(`/api/payments/${paymentId}/refresh-status`, {});
   }
 
   confirmSimulated(paymentId: string): Observable<unknown> {

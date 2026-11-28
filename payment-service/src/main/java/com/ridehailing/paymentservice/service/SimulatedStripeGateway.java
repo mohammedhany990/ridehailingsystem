@@ -13,8 +13,8 @@ import java.util.UUID;
 public class SimulatedStripeGateway implements StripeGateway {
 
     @Override
-    public String createPaymentIntent(BigDecimal amount, String currency, String idempotencyKey) {
-        return "sim_pi_" + UUID.randomUUID().toString().replace("-", "").substring(0, 24);
+    public GatewayIntent createPaymentIntent(BigDecimal amount, String currency, String idempotencyKey) {
+        return new GatewayIntent("sim_pi_" + UUID.randomUUID().toString().replace("-", "").substring(0, 24), null);
     }
 
     @Override

@@ -114,6 +114,7 @@ MAIL_PASSWORD=your_smtp_password
 # Payment gateway: simulated by default; set STRIPE_ENABLED=true with a test key for Stripe test mode
 STRIPE_ENABLED=false
 STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
 # Google sign-in: create an OAuth 2.0 Client ID (Web) in Google Cloud Console and paste it here;
 # add your app origins (e.g. http://localhost:8080) under Authorized JavaScript origins.
@@ -173,7 +174,7 @@ A mobile-first **Angular 20** app (standalone components + signals) lives in `./
 
 - **5 ride tiers** (MOTO, STANDARD, COMFORT, XL, PREMIUM) with per-tier base + per-km pricing.
 - **Fare negotiation:** rider proposes a price, driver counters or accepts - inDrive-style on top of metered estimates.
-- **Event-driven payments:** a Kafka ride-completed event creates the payment; charges go through a pluggable gateway (Stripe test mode behind `STRIPE_ENABLED`, simulator by default) with idempotency keys; receipts are ownership-checked.
+- **Event-driven payments:** a Kafka ride-completed event creates the payment; charges go through a pluggable gateway with idempotency keys; receipts are ownership-checked. With Stripe keys set (`STRIPE_ENABLED=true`) the rider pays through a real Stripe Payment Intent in an embedded Stripe Elements card sheet, final status arrives via a signature-verified webhook (`/api/payments/webhook`, public at the gateway, authenticated by Stripe's HMAC signature), and a status-refresh endpoint covers local dev where webhooks can't reach the machine. Without keys, a simulated gateway keeps the full flow runnable.
 - **Scheduled jobs under ShedLock** (one replica runs each job): stale-ride expiry, daily driver-earnings rollups, location cleanup, stale-driver sweep.
 - **Driver earnings** daily chart and **admin dashboards** (users by role, rides by status, revenue) gated by `ROLE_ADMIN`.
 - **Security:** OTP email verification, Google sign-in with server-side ID token verification (audience + issuer checked against your client ID), JWT access/refresh tokens, gateway-edge token validation, security headers, per-route Redis rate limiting.

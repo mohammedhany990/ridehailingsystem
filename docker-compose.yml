@@ -233,7 +233,7 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: true
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: true
 
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
 
     volumes:
       - auth-uploads:/app/uploads
@@ -251,7 +251,7 @@ services:
     build:
       context: ./frontend
       args:
-        GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:}
+        GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
 
     ports:
       - "8080:80"
@@ -444,6 +444,7 @@ services:
       STRIPE_ENABLED: ${STRIPE_ENABLED:-false}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
     depends_on:
       config-server:
         condition: service_healthy

@@ -81,13 +81,16 @@ class PaymentServiceTest {
                 .status(PaymentStatus.PENDING).createdAt(Instant.now()).build();
 
         when(repository.findById(pending.getId())).thenReturn(Optional.of(pending));
-        when(stripeGateway.createPaymentIntent(any(), anyString(), anyString())).thenReturn("pi_test_123");
+        when(stripeGateway.createPaymentIntent(any(), anyString(), anyString()))
+                .thenReturn(new GatewayIntent("pi_test_123", "pi_test_123_secret_abc"));
         when(repository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Payment result = service.initiateCharge(pending.getId(), rider);
+        PaymentService.ChargeResult charge = service.initiateCharge(pending.getId(), rider);
+        Payment result = charge.payment();
 
         assertThat(result.getStripePaymentIntentId()).isEqualTo("pi_test_123");
         assertThat(result.getStatus()).isEqualTo(PaymentStatus.REQUIRES_CONFIRMATION);
+        assertThat(charge.clientSecret()).isEqualTo("pi_test_123_secret_abc");
         verify(stripeGateway).createPaymentIntent(
                 new BigDecimal("85.50"), "EGP", "ride-" + pending.getRideId());
     }

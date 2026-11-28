@@ -35,6 +35,17 @@ public class PaymentService {
     @Value("${app.payments.default-amount:0}")
     private java.math.BigDecimal defaultAmount;
 
+    @Value("${stripe.publishable-key:}")
+    private String publishableKey;
+
+    public boolean liveGateway() {
+        return stripeGateway.enabled();
+    }
+
+    public String publishableKey() {
+        return stripeGateway.enabled() ? publishableKey : null;
+    }
+
     @Transactional
     public Payment handleRideCompleted(RideEvent event) {
         return repository.findByRideId(event.rideId())
@@ -60,17 +71,20 @@ public class PaymentService {
     }
 
     @Transactional
-    public Payment initiateCharge(UUID paymentId, UUID riderId) {
+    public ChargeResult initiateCharge(UUID paymentId, UUID riderId) {
         Payment payment = findOwned(paymentId, riderId);
         if (payment.getStatus() != PaymentStatus.PENDING && payment.getStatus() != PaymentStatus.FAILED) {
             throw new IllegalStateException("Payment is not chargeable in state " + payment.getStatus());
         }
-        String intentId = stripeGateway.createPaymentIntent(
+        GatewayIntent intent = stripeGateway.createPaymentIntent(
                 payment.getAmount(), payment.getCurrency(), "ride-" + payment.getRideId());
-        payment.setStripePaymentIntentId(intentId);
+        payment.setStripePaymentIntentId(intent.id());
         payment.setStatus(PaymentStatus.REQUIRES_CONFIRMATION);
         payment.setUpdatedAt(Instant.now());
-        return repository.save(payment);
+        return new ChargeResult(repository.save(payment), intent.clientSecret(), stripeGateway.enabled());
+    }
+
+    public record ChargeResult(Payment payment, String clientSecret, boolean liveGateway) {
     }
 
     @Transactional
@@ -109,6 +123,19 @@ public class PaymentService {
                 "PAYMENT_SUCCEEDED", saved.getId(), saved.getRideId(), saved.getRiderId(), saved.getDriverId(),
                 saved.getAmount(), saved.getCurrency(), null));
         return saved;
+    }
+
+    @Transactional
+    public Payment refreshFromGateway(UUID paymentId, UUID riderId) {
+        if (!stripeGateway.enabled()) {
+            throw new IllegalStateException("Status refresh is only available with a live Stripe key");
+        }
+        Payment payment = findOwned(paymentId, riderId);
+        String intentId = payment.getStripePaymentIntentId();
+        if (intentId == null || intentId.isBlank()) {
+            throw new IllegalStateException("Payment has no Stripe intent yet");
+        }
+        return syncStatus(intentId, stripeGateway.retrieveStatus(intentId));
     }
 
     public Page<PaymentResponse> historyForRider(UUID riderId, Pageable pageable) {

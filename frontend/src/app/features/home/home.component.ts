@@ -8,6 +8,7 @@ import { ProfileService } from '../../core/profile.service';
 import { RideService } from '../../core/ride.service';
 import { TPipe } from '../../shared/t.pipe';
 import { FareEstimate, FareOffer, Ride } from '../../core/models';
+import { StripeSheetComponent } from '../pay/stripe-sheet.component';
 import { ApiService } from '../../core/api.service';
 
 type Stage = 'pickup' | 'dropoff' | 'estimate' | 'requested' | 'active' | 'done';
@@ -31,7 +32,7 @@ const TIERS: TierOption[] = [
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [MapComponent, DriverHomeComponent, TPipe, DecimalPipe],
+  imports: [MapComponent, DriverHomeComponent, TPipe, DecimalPipe, StripeSheetComponent],
   template: `
     @if (isDriver()) {
       <app-driver-home />
@@ -161,11 +162,26 @@ const TIERS: TierOption[] = [
         <button type="button" class="cta" [disabled]="paying()" (click)="pay()">
           {{ paying() ? ('common.loading' | t) + '…' : 'Pay (test mode)' }}
         </button>
+        @if (payError()) {
+          <p class="pay-error" role="alert">{{ payError() }}</p>
+        }
         @if (paid()) {
           <p class="paid-ok">{{ receipt() }}</p>
         }
         <button type="button" class="ghost" (click)="reset()">{{ 'common.back' | t }}</button>
       </div>
+    }
+
+    @if (stripeSession(); as s) {
+      <app-stripe-sheet
+        [clientSecret]="s.clientSecret"
+        [publishableKey]="s.publishableKey"
+        [paymentId]="s.paymentId"
+        [amount]="s.amount"
+        [currency]="s.currency"
+        (succeeded)="onStripePaid()"
+        (failed)="onStripeFailed($event)"
+      />
     }
       }
   `,
@@ -246,6 +262,7 @@ const TIERS: TierOption[] = [
     .status-pulse { display: grid; place-items: center; margin-bottom: 6px; }
     .pulse { width: 14px; height: 14px; border-radius: 50%; background: var(--brand); animation: pulse-dot 1.2s infinite; }
     .fare-total { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin: 8px 0 14px; }
+    .pay-error { color: #ff6b6b; font-size: 13px; margin-top: 8px; }
     .paid-ok { color: var(--accent); font-weight: 700; margin: 10px 0 0; }
     .offer-row { display: flex; gap: 8px; margin-bottom: 10px; }
     .offer-row input {
@@ -303,6 +320,8 @@ export class HomeComponent implements OnDestroy {
   readonly promoBad = signal(false);
   readonly requesting = signal(false);
   readonly paying = signal(false);
+  readonly payError = signal('');
+  readonly stripeSession = signal<{ clientSecret: string; publishableKey: string; paymentId: string; amount: number; currency: string } | null>(null);
   readonly paid = signal(false);
   readonly receipt = signal('');
   readonly proposedFare = signal<number | null>(null);
@@ -537,7 +556,29 @@ export class HomeComponent implements OnDestroy {
           return;
         }
         this.rideService.charge(payment.id).subscribe({
-          next: () => this.confirm(payment.id),
+          next: (chargeRes) => {
+            if (chargeRes.gateway === 'stripe' && chargeRes.clientSecret) {
+              this.rideService.paymentConfig().subscribe({
+                next: (cfg) => {
+                  this.paying.set(false);
+                  if (cfg.publishableKey) {
+                    this.stripeSession.set({
+                      clientSecret: chargeRes.clientSecret!,
+                      publishableKey: cfg.publishableKey,
+                      paymentId: payment.id,
+                      amount: chargeRes.amount,
+                      currency: chargeRes.currency,
+                    });
+                  } else {
+                    this.payError.set('Stripe publishable key is not configured');
+                  }
+                },
+                error: () => this.paying.set(false),
+              });
+            } else {
+              this.confirm(payment.id);
+            }
+          },
           error: () => this.paying.set(false),
         });
       },
@@ -546,20 +587,34 @@ export class HomeComponent implements OnDestroy {
   }
 
   private confirm(paymentId: string): void {
-    const ride = this.ride();
     this.rideService.confirmSimulated(paymentId).subscribe({
       next: () => {
         this.paying.set(false);
-        this.paid.set(true);
-        if (ride) {
-          this.rideService.receipt(ride.id).subscribe({
-            next: (r) => this.receipt.set(`${r.receiptNumber} · ${r.amount} ${r.currency} · ${r.status}`),
-            error: () => {},
-          });
-        }
+        this.showReceipt();
       },
       error: () => this.paying.set(false),
     });
+  }
+
+  onStripePaid(): void {
+    this.stripeSession.set(null);
+    this.showReceipt();
+  }
+
+  onStripeFailed(message: string): void {
+    this.stripeSession.set(null);
+    if (message) this.payError.set(message);
+  }
+
+  private showReceipt(): void {
+    this.paid.set(true);
+    const ride = this.ride();
+    if (ride) {
+      this.rideService.receipt(ride.id).subscribe({
+        next: (r) => this.receipt.set(`${r.receiptNumber} · ${r.amount} ${r.currency} · ${r.status}`),
+        error: () => {},
+      });
+    }
   }
 
   reset(): void {

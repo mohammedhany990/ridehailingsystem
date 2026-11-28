@@ -38,6 +38,7 @@ stripe:
   enabled: ${STRIPE_ENABLED:false}
   secret-key: ${STRIPE_SECRET_KEY:}
   webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY:}
 
 app:
   kafka:

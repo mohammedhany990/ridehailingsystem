@@ -1,6 +1,8 @@
 package com.ridehailing.paymentservice.controller;
 
 import com.ridehailing.paymentservice.common.ApiResponse;
+import com.ridehailing.paymentservice.dto.ChargeResponse;
+import com.ridehailing.paymentservice.dto.PaymentConfigResponse;
 import com.ridehailing.paymentservice.dto.PaymentResponse;
 import com.ridehailing.paymentservice.dto.ReceiptResponse;
 import com.ridehailing.paymentservice.service.PaymentService;
@@ -77,13 +79,32 @@ public class PaymentController {
     }
 
     @PostMapping("/{id}/charge")
-    public ResponseEntity<ApiResponse<PaymentResponse>> charge(
+    public ResponseEntity<ApiResponse<ChargeResponse>> charge(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getClaim("userId"));
+        PaymentService.ChargeResult result = paymentService.initiateCharge(id, userId);
+        return ResponseEntity.ok(ApiResponse.success(
+                "Charge initiated",
+                ChargeResponse.from(result.payment(), result.clientSecret(), result.liveGateway())));
+    }
+
+    @GetMapping("/config")
+    public ResponseEntity<ApiResponse<PaymentConfigResponse>> config() {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Payment configuration",
+                new PaymentConfigResponse(paymentService.liveGateway() ? "stripe" : "simulated",
+                        paymentService.publishableKey())));
+    }
+
+    @PostMapping("/{id}/refresh-status")
+    public ResponseEntity<ApiResponse<PaymentResponse>> refreshStatus(
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getClaim("userId"));
         return ResponseEntity.ok(ApiResponse.success(
-                "Charge initiated",
-                PaymentResponse.from(paymentService.initiateCharge(id, userId))));
+                "Payment status refreshed",
+                PaymentResponse.from(paymentService.refreshFromGateway(id, userId))));
     }
 
     @PostMapping("/{id}/confirm-simulated")

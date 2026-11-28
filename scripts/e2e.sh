@@ -171,8 +171,17 @@ for i in $(seq 1 30); do
 done
 [ -n "$PAYMENT_ID" ] || fail "no payment for ride"
 
+say "payment config endpoint"
+GATEWAY=$(curl -fsS "$GW/api/payments/config" -H "Authorization: Bearer $RIDER_TOKEN" | jq -r '.data.gateway')
+[ "$GATEWAY" = "simulated" ] || fail "expected simulated gateway in CI, got $GATEWAY"
+
+say "stripe webhook route is public at the gateway (signature-verified, not JWT)"
+WEBHOOK_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$GW/api/payments/webhook" -H 'Content-Type: application/json' -d '{}')
+[ "$WEBHOOK_CODE" != "401" ] && [ "$WEBHOOK_CODE" != "403" ] || fail "webhook rejected at gateway with $WEBHOOK_CODE"
+
 say "charge + confirm (simulated)"
-req -X POST "$GW/api/payments/$PAYMENT_ID/charge" -H "Authorization: Bearer $RIDER_TOKEN" > /dev/null || fail "charge"
+CHARGE_GW=$(curl -fsS -X POST "$GW/api/payments/$PAYMENT_ID/charge" -H "Authorization: Bearer $RIDER_TOKEN" | jq -r '.data.gateway')
+[ "$CHARGE_GW" = "simulated" ] || fail "expected simulated charge gateway, got $CHARGE_GW"
 req -X POST "$GW/api/payments/$PAYMENT_ID/confirm-simulated" -H "Authorization: Bearer $RIDER_TOKEN" > /dev/null || fail "confirm"
 
 say "trip receipt"
