@@ -73,7 +73,7 @@ DRIVER_TOKEN=$(login "$DRIVER_EMAIL"); [ -n "$DRIVER_TOKEN" ] || fail "driver lo
 
 say "google sign-in endpoint present (disabled without client id)"
 GOOGLE_CODE=$(curl -s -o /tmp/e2e-google.json -w '%{http_code}' -X POST "$GW/api/auth/google" -H 'Content-Type: application/json' -d '{"idToken":"not-a-real-token"}')
-if [ -n "$GOOGLE_CLIENT_ID" ]; then
+if [ -n "${GOOGLE_CLIENT_ID:-}" ]; then
   [ "$GOOGLE_CODE" = "401" ] || fail "google endpoint with fake token returned $GOOGLE_CODE, expected 401"
 else
   [ "$GOOGLE_CODE" = "503" ] || fail "google endpoint unconfigured returned $GOOGLE_CODE, expected 503"
