@@ -19,9 +19,19 @@ register_and_verify() {
     || fail "register $role"
   local otp=""
   for i in $(seq 1 30); do
-    otp=$(curl -fsS "$MAILHOG/api/v2/messages?limit=50" \
-      | jq -r --arg to "$email" '[.items[] | select(.To[0].Mailbox + "@" + .To[0].Domain == $to)][0].Content.Body // empty' \
-      | grep -oE '[0-9]{6}' | head -1 || true)
+    local msg body cte
+    msg=$(curl -fsS "$MAILHOG/api/v2/messages?limit=50" \
+      | jq -c --arg to "$email" '[.items[] | select(.To[0].Mailbox + "@" + .To[0].Domain == $to)][0] // empty' || true)
+    if [ -n "$msg" ]; then
+      cte=$(echo "$msg" | jq -r '.Content.Headers["Content-Transfer-Encoding"][0] // ""' | tr '[:upper:]' '[:lower:]')
+      body=$(echo "$msg" | jq -r '.Content.Body // ""')
+      if [ "$cte" = "base64" ]; then
+        body=$(echo "$body" | tr -d '\r\n' | base64 -d 2>/dev/null || true)
+      else
+        body=$(echo "$body" | sed 's/=\r\n//g; s/=\n//g')
+      fi
+      otp=$(echo "$body" | grep -oE '[0-9]{6}' | head -1 || true)
+    fi
     [ -n "$otp" ] && break
     sleep 2
   done
