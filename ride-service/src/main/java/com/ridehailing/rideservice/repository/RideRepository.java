@@ -21,6 +21,8 @@ public interface RideRepository extends JpaRepository<Ride, UUID> {
     List<Ride> findByDriverIdOrderByRequestedAtDesc(UUID driverId);
 
     List<Ride> findByStatus(RideStatus status);
+    long countByStatus(RideStatus status);
+    long countByRequestedAtAfter(Instant from);
 
     @Query("SELECT r FROM Ride r LEFT JOIN FETCH r.fare LEFT JOIN FETCH r.cancellation WHERE r.id = :id")
     Optional<Ride> findByIdWithDetails(@Param("id") UUID id);

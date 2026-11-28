@@ -6,10 +6,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
+import com.ridehailing.authservice.entity.Role;
 import com.ridehailing.authservice.entity.User;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
+
+    long countByRole(Role role);
+
+    long countByEnabledTrue();
 
     boolean existsByEmail(String email);
 

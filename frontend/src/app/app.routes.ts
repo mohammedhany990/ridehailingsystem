@@ -38,6 +38,14 @@ export const routes: Routes = [
         path: 'profile',
         loadComponent: () => import('./features/profile/profile.component').then((m) => m.ProfileComponent),
       },
+      {
+        path: 'earnings',
+        loadComponent: () => import('./features/earnings/earnings.component').then((m) => m.EarningsComponent),
+      },
+      {
+        path: 'admin',
+        loadComponent: () => import('./features/admin/admin.component').then((m) => m.AdminComponent),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

@@ -13,15 +13,23 @@ export class AuthService {
   private tokenSignal = signal<string | null>(this.readToken());
   readonly isAuthenticated = computed(() => !!this.tokenSignal());
   readonly currentUserId = computed(() => {
+    const payload = this.decodePayload();
+    return (payload?.['userId'] as string) ?? null;
+  });
+  readonly currentRole = computed(() => {
+    const payload = this.decodePayload();
+    return (payload?.['role'] as string) ?? null;
+  });
+
+  private decodePayload(): Record<string, unknown> | null {
     const token = this.tokenSignal();
     if (!token) return null;
     try {
-      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-      return payload.userId as string;
+      return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
     } catch {
       return null;
     }
-  });
+  }
 
   private readToken(): string | null {
     try {

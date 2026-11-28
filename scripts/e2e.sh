@@ -149,4 +149,8 @@ for i in $(seq 1 30); do
 done
 [ "$UNREAD" != "0" ] || fail "rider has no notifications"
 
-echo "E2E PASS: register -> verify -> login -> driver online -> promo -> estimate -> ride(COMFORT) -> trail($TRAIL_COUNT) -> payment -> receipt($RECEIPT) -> notifications (unread=$UNREAD)"
+say "driver earnings endpoint"
+curl -fsS "$GW/api/payments/earnings/me/daily" -H "Authorization: Bearer $DRIVER_TOKEN" \
+  | jq -e '.success == true' > /dev/null || fail "driver earnings endpoint"
+
+echo "E2E PASS: register -> verify -> login -> driver online -> promo -> estimate -> ride(COMFORT) -> trail($TRAIL_COUNT) -> payment -> receipt($RECEIPT) -> notifications (unread=$UNREAD) -> earnings"

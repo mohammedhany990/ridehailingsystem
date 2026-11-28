@@ -23,4 +23,12 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
 
     List<Payment> findByStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
             PaymentStatus status, Instant from, Instant to);
+
+    long countByStatus(PaymentStatus status);
+
+    @org.springframework.data.jpa.repository.Query("select coalesce(sum(p.amount), 0) from Payment p where p.status = com.ridehailing.paymentservice.entity.PaymentStatus.SUCCEEDED")
+    java.math.BigDecimal sumSucceededAmounts();
+
+    @org.springframework.data.jpa.repository.Query("select coalesce(sum(p.amount), 0) from Payment p where p.status = com.ridehailing.paymentservice.entity.PaymentStatus.SUCCEEDED and p.createdAt >= :from")
+    java.math.BigDecimal sumSucceededAmountsSince(@org.springframework.data.repository.query.Param("from") Instant from);
 }
