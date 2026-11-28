@@ -38,6 +38,9 @@ COPY --from=build /app/target/*.jar app.jar
 # Give ownership to non-root user
 RUN chown appuser:appgroup app.jar
 
+# Avatar upload directory, writable by the non-root user; named volumes copy this ownership on first init
+RUN mkdir -p /app/uploads && chown appuser:appgroup /app/uploads
+
 USER appuser
 
 # Expose the port (overridden per service in docker-compose)

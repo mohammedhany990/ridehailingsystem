@@ -16,10 +16,22 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.lang.NonNull;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final Set<String> PUBLIC_PATHS = Set.of(
+            "/api/auth/register",
+            "/api/auth/login",
+            "/api/auth/refresh",
+            "/api/auth/validate",
+            "/api/auth/verify-email",
+            "/api/auth/resend-verification-otp",
+            "/api/auth/forgot-password",
+            "/api/auth/reset-password"
+    );
 
     private final JwtTokenService jwtTokenService;
     private final UserDetailsService userDetailsService;
@@ -32,7 +44,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        if (path.startsWith("/api/auth/") ||
+        if (PUBLIC_PATHS.contains(path) ||
+                path.startsWith("/api/auth/oauth2/") ||
                 path.startsWith("/actuator/") ||
                 path.startsWith("/swagger-ui/") ||
                 path.startsWith("/v3/api-docs") ||
